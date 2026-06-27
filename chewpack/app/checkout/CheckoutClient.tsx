@@ -99,6 +99,8 @@ export default function CheckoutClient ({
     return 'Start 1-year access'
   }, [selectedPlanId])
 
+  const primaryButtonLabel = clientSecret ? checkoutLabel : 'Pay / checkout'
+
   const currentTone = methodOptions.find(option => option.id === method)?.tone ?? 'calm'
 
   useEffect(() => {
@@ -385,9 +387,7 @@ export default function CheckoutClient ({
                   ? clientSecret
                     ? 'Confirming payment...'
                     : 'Preparing checkout...'
-                  : clientSecret
-                    ? checkoutLabel
-                    : 'Load checkout'}
+                  : primaryButtonLabel}
               </button>
               <button
                 type='button'
@@ -458,7 +458,7 @@ export default function CheckoutClient ({
               <div className='min-h-[260px]' ref={paymentElementRef} />
               {!clientSecret ? (
                 <p className='mt-4 text-sm leading-7 text-white/50'>
-                  Click "Load checkout" to create the PaymentIntent and render Stripe&apos;s embedded payment fields here.
+                  Click "Pay / checkout" to create the PaymentIntent and render Stripe&apos;s embedded payment fields here.
                 </p>
               ) : null}
             </div>

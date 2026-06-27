@@ -39,7 +39,7 @@ export default function Home () {
               href='/checkout?plan=1y'
               className='rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black'
             >
-              Subscribe
+              Pay / checkout
             </Link>
           </header>
 
@@ -62,7 +62,7 @@ export default function Home () {
                 href='/checkout?plan=1y'
                 className='rounded-full bg-white px-7 py-4 text-center text-sm font-semibold text-black transition hover:bg-white/85'
               >
-                  See checkout
+                  Pay / checkout
                 </Link>
                 <a
                   href='#features'

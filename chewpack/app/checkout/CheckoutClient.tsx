@@ -115,9 +115,9 @@ export default function CheckoutClient ({
         await loadStripeScript()
         if (cancelled || !window.Stripe) return
 
-        const publicKey = process.env.STRIPE_PUBLIC_KEY
+        const publicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
         if (!publicKey) {
-          throw new Error('Missing STRIPE_PUBLIC_KEY environment variable.')
+          throw new Error('Missing NEXT_PUBLIC_STRIPE_PUBLIC_KEY environment variable.')
         }
 
         const stripe = window.Stripe(publicKey)

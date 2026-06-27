@@ -101,40 +101,22 @@ export async function POST (request: Request) {
     )
   }
 
-  const productBody = new URLSearchParams()
-  productBody.set('name', plan.stripe.productName)
-  productBody.set('description', plan.stripe.description)
-  productBody.set('metadata[plan_id]', planId)
-
-  const productResponse = await fetch('https://api.stripe.com/v1/products', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: productBody
-  })
-
-  const productPayload = await productResponse.json()
-
-  if (!productResponse.ok) {
+  const priceId = plan.stripe.priceEnv ? process.env[plan.stripe.priceEnv] : undefined
+  if (!priceId) {
     return NextResponse.json(
-      { error: productPayload?.error?.message ?? 'Stripe product creation failed.' },
+      { error: `Missing ${plan.stripe.priceEnv} environment variable.` },
       { status: 500 }
     )
   }
 
   const body = new URLSearchParams()
   body.set('customer', customerPayload.id)
+  body.set('items[0][price]', priceId)
   body.set('items[0][quantity]', '1')
-  body.set('items[0][price_data][currency]', 'eur')
-  body.set('items[0][price_data][unit_amount]', plan.stripe.amount)
-  body.set('items[0][price_data][product]', productPayload.id)
-  body.set('items[0][price_data][recurring][interval]', plan.stripe.recurring?.interval ?? 'month')
-  body.set('items[0][price_data][recurring][interval_count]', plan.stripe.recurring?.interval_count ?? '1')
   body.set('payment_behavior', 'default_incomplete')
   body.set('payment_settings[save_default_payment_method]', 'on_subscription')
-  body.set('expand[0]', 'latest_invoice.payment_intent')
+  body.set('expand[0]', 'latest_invoice.confirmation_secret')
+  body.set('expand[1]', 'latest_invoice.payment_intent')
   body.set('metadata[plan_id]', planId)
   body.set('metadata[plan_title]', plan.title)
   if (company) body.set('metadata[company]', company)
@@ -158,18 +140,21 @@ export async function POST (request: Request) {
     )
   }
 
-  const paymentIntent = stripePayload.latest_invoice?.payment_intent
+  const latestInvoice = stripePayload.latest_invoice
+  const paymentIntent = latestInvoice?.payment_intent
+  const clientSecret = latestInvoice?.confirmation_secret?.client_secret ?? paymentIntent?.client_secret
+  const intentId = paymentIntent?.id ?? latestInvoice?.id
 
-  if (!paymentIntent?.client_secret) {
+  if (!clientSecret) {
     return NextResponse.json(
-      { error: 'Stripe did not return a payment intent for this subscription.' },
+      { error: 'Stripe did not return a payment secret for this subscription.' },
       { status: 500 }
     )
   }
 
   return NextResponse.json({
-    clientSecret: paymentIntent.client_secret,
-    intentId: paymentIntent.id,
+    clientSecret,
+    intentId,
     subscriptionId: stripePayload.id,
     planId
   })

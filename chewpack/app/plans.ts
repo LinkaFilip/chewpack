@@ -14,6 +14,7 @@ export type Plan = {
     amount: string
     productName: string
     description: string
+    priceEnv?: string
     recurring?: {
       interval: 'month'
       interval_count: string
@@ -37,6 +38,7 @@ export const plans: Record<PlanId, Plan> = {
       amount: '2000',
       productName: '3-month license',
       description: 'Chewpack license for 3 months',
+      priceEnv: 'STRIPE_PRICE_3M',
       recurring: {
         interval: 'month',
         interval_count: '3'
@@ -58,6 +60,7 @@ export const plans: Record<PlanId, Plan> = {
       amount: '6000',
       productName: '1-year license',
       description: 'Chewpack license for 1 year',
+      priceEnv: 'STRIPE_PRICE_1Y',
       recurring: {
         interval: 'month',
         interval_count: '12'

@@ -42,7 +42,11 @@ For Netlify, define these variables in the site settings:
 - `STRIPE_SECRET_KEY` for the server route at `app/api/stripe/checkout/route.ts`
 - `NEXT_PUBLIC_STRIPE_PUBLIC_KEY` for Stripe Elements in `app/checkout/CheckoutClient.tsx`
 - `STRIPE_WEBHOOK_SECRET` for `app/api/stripe/webhook/route.ts`
+- `STRIPE_PRICE_3M` for the Stripe recurring Price ID attached to the 3-month license Product
+- `STRIPE_PRICE_1Y` for the Stripe recurring Price ID attached to the 1-year license Product
 
 The `NEXT_PUBLIC_` prefix is required so the public key is available in the browser bundle.
+
+Create the subscription Products and Prices in Stripe Dashboard, then copy the Price IDs that start with `price_` into these variables. The checkout route uses those existing Prices instead of creating Products during checkout.
 
 Before switching Stripe Elements to live mode for EU digital software sales, review whether the PaymentIntent and subscription flows should enable Stripe Tax.

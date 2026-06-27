@@ -1,4 +1,10 @@
-@import "tailwindcss";
-*{
+@import 'tailwindcss';
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
   user-select: none;
+  background: #050814;
 }

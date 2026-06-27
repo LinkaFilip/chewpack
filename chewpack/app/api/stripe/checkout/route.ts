@@ -101,13 +101,35 @@ export async function POST (request: Request) {
     )
   }
 
+  const productBody = new URLSearchParams()
+  productBody.set('name', plan.stripe.productName)
+  productBody.set('description', plan.stripe.description)
+  productBody.set('metadata[plan_id]', planId)
+
+  const productResponse = await fetch('https://api.stripe.com/v1/products', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: productBody
+  })
+
+  const productPayload = await productResponse.json()
+
+  if (!productResponse.ok) {
+    return NextResponse.json(
+      { error: productPayload?.error?.message ?? 'Stripe product creation failed.' },
+      { status: 500 }
+    )
+  }
+
   const body = new URLSearchParams()
   body.set('customer', customerPayload.id)
   body.set('items[0][quantity]', '1')
   body.set('items[0][price_data][currency]', 'eur')
   body.set('items[0][price_data][unit_amount]', plan.stripe.amount)
-  body.set('items[0][price_data][product_data][name]', plan.title)
-  body.set('items[0][price_data][product_data][description]', plan.stripe.description)
+  body.set('items[0][price_data][product]', productPayload.id)
   body.set('items[0][price_data][recurring][interval]', plan.stripe.recurring?.interval ?? 'month')
   body.set('items[0][price_data][recurring][interval_count]', plan.stripe.recurring?.interval_count ?? '1')
   body.set('payment_behavior', 'default_incomplete')

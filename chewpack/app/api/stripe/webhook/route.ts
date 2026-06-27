@@ -58,20 +58,32 @@ export async function POST (request: Request) {
     data?: {
       object?: {
         id?: string
-        payment_status?: string
+        status?: string
+        customer?: string
         customer_email?: string
+        customer_email_address?: string
         metadata?: Record<string, string>
       }
     }
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data?.object
-    console.log('Stripe checkout completed', {
-      id: session?.id,
-      payment_status: session?.payment_status,
-      customer_email: session?.customer_email,
-      metadata: session?.metadata
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data?.object
+    console.log('Stripe payment completed', {
+      id: paymentIntent?.id,
+      status: paymentIntent?.status,
+      metadata: paymentIntent?.metadata
+    })
+  }
+
+  if (event.type === 'invoice.paid') {
+    const invoice = event.data?.object
+    console.log('Stripe subscription invoice paid', {
+      id: invoice?.id,
+      status: invoice?.status,
+      customer: invoice?.customer,
+      customer_email: invoice?.customer_email,
+      metadata: invoice?.metadata
     })
   }
 

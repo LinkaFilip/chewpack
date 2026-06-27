@@ -28,6 +28,9 @@ export async function POST (request: Request) {
   const plan = plans[planId]
   const customer = payload.customer ?? {}
   const customerEmail = customer.email?.trim()
+  const customerName = customer.name?.trim()
+  const company = customer.company?.trim()
+  const country = customer.country?.trim()
 
   if (customerEmail && !isRoughEmail(customerEmail)) {
     return NextResponse.json(
@@ -36,20 +39,86 @@ export async function POST (request: Request) {
     )
   }
 
+  if (plan.stripe.mode === 'payment') {
+    const body = new URLSearchParams()
+    body.set('amount', plan.stripe.amount)
+    body.set('currency', 'eur')
+    body.set('description', plan.stripe.description)
+    body.set('automatic_payment_methods[enabled]', 'true')
+    body.set('metadata[plan_id]', planId)
+    body.set('metadata[plan_title]', plan.title)
+    if (customerEmail) body.set('receipt_email', customerEmail)
+    if (customerName) body.set('metadata[customer_name]', customerName)
+    if (company) body.set('metadata[company]', company)
+    if (country) body.set('metadata[country]', country)
+
+    const response = await fetch('https://api.stripe.com/v1/payment_intents', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body
+    })
+
+    const stripePayload = await response.json()
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: stripePayload?.error?.message ?? 'Stripe payment setup failed.' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      clientSecret: stripePayload.client_secret,
+      intentId: stripePayload.id,
+      planId
+    })
+  }
+
+  const customerBody = new URLSearchParams()
+  if (customerEmail) customerBody.set('email', customerEmail)
+  if (customerName) customerBody.set('name', customerName)
+  if (company) customerBody.set('metadata[company]', company)
+  if (country) customerBody.set('metadata[country]', country)
+
+  const customerResponse = await fetch('https://api.stripe.com/v1/customers', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: customerBody
+  })
+
+  const customerPayload = await customerResponse.json()
+
+  if (!customerResponse.ok) {
+    return NextResponse.json(
+      { error: customerPayload?.error?.message ?? 'Stripe customer creation failed.' },
+      { status: 500 }
+    )
+  }
+
   const body = new URLSearchParams()
-  body.set('mode', 'payment')
-  body.set('success_url', `${process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`)
-  body.set('cancel_url', `${process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin}/checkout/cancel`)
-  body.set('line_items[0][quantity]', '1')
-  body.set('line_items[0][price_data][currency]', 'eur')
-  body.set('line_items[0][price_data][unit_amount]', plan.stripe.amount)
-  body.set('line_items[0][price_data][product_data][name]', plan.title)
-  body.set('line_items[0][price_data][product_data][description]', plan.stripe.description)
+  body.set('customer', customerPayload.id)
+  body.set('items[0][quantity]', '1')
+  body.set('items[0][price_data][currency]', 'eur')
+  body.set('items[0][price_data][unit_amount]', plan.stripe.amount)
+  body.set('items[0][price_data][product_data][name]', plan.title)
+  body.set('items[0][price_data][product_data][description]', plan.stripe.description)
+  body.set('items[0][price_data][recurring][interval]', plan.stripe.recurring?.interval ?? 'month')
+  body.set('items[0][price_data][recurring][interval_count]', plan.stripe.recurring?.interval_count ?? '1')
+  body.set('payment_behavior', 'default_incomplete')
+  body.set('payment_settings[save_default_payment_method]', 'on_subscription')
+  body.set('expand[0]', 'latest_invoice.payment_intent')
   body.set('metadata[plan_id]', planId)
   body.set('metadata[plan_title]', plan.title)
-  if (customerEmail) body.set('customer_email', customerEmail)
+  if (company) body.set('metadata[company]', company)
+  if (country) body.set('metadata[country]', country)
 
-  const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+  const response = await fetch('https://api.stripe.com/v1/subscriptions', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${secretKey}`,
@@ -62,14 +131,24 @@ export async function POST (request: Request) {
 
   if (!response.ok) {
     return NextResponse.json(
-      { error: stripePayload?.error?.message ?? 'Stripe checkout session creation failed.' },
+      { error: stripePayload?.error?.message ?? 'Stripe subscription setup failed.' },
+      { status: 500 }
+    )
+  }
+
+  const paymentIntent = stripePayload.latest_invoice?.payment_intent
+
+  if (!paymentIntent?.client_secret) {
+    return NextResponse.json(
+      { error: 'Stripe did not return a payment intent for this subscription.' },
       { status: 500 }
     )
   }
 
   return NextResponse.json({
-    checkoutSessionId: stripePayload.id,
-    checkoutUrl: stripePayload.url,
+    clientSecret: paymentIntent.client_secret,
+    intentId: paymentIntent.id,
+    subscriptionId: stripePayload.id,
     planId
   })
 }

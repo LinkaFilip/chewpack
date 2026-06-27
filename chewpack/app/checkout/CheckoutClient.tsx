@@ -1,8 +1,96 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { isPlanId, planOrder, plans } from '../plans'
+import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
+import { isPlanId, planOrder, plans, type PlanId } from '../plans'
+
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY)
+  : null
+
+type CustomerDetails = {
+  email: string
+  name: string
+  company: string
+  country: string
+}
+
+type PaymentSetup = {
+  clientSecret: string
+  intentId: string
+  subscriptionId?: string
+  planId: PlanId
+}
+
+function PaymentForm ({
+  customer,
+  disabled
+}: {
+  customer: CustomerDetails
+  disabled: boolean
+}) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handlePaymentSubmit (event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!stripe || !elements) return
+
+    try {
+      setSubmitting(true)
+      setError('')
+
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/checkout/success`,
+          payment_method_data: {
+            billing_details: {
+              email: customer.email || undefined,
+              name: customer.name || undefined,
+              address: {
+                country: customer.country || undefined
+              }
+            }
+          }
+        }
+      })
+
+      if (result.error) {
+        setError(result.error.message ?? 'Payment could not be completed.')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Payment could not be completed.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handlePaymentSubmit} className='mt-6 space-y-5'>
+      <div className='rounded-3xl border border-white/10 bg-white p-4 text-black'>
+        <PaymentElement />
+      </div>
+      <button
+        type='submit'
+        disabled={disabled || submitting || !stripe || !elements}
+        className='w-full rounded-full bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
+      >
+        {submitting ? 'Confirming payment...' : 'Pay securely'}
+      </button>
+      {error ? (
+        <p className='rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
+          {error}
+        </p>
+      ) : null}
+    </form>
+  )
+}
 
 export default function CheckoutClient ({
   planId: initialPlanId
@@ -10,7 +98,7 @@ export default function CheckoutClient ({
   planId?: string
 }) {
   const planId = isPlanId(initialPlanId) ? initialPlanId : '1y'
-  const [selectedPlanId, setSelectedPlanId] = useState(planId)
+  const [selectedPlanId, setSelectedPlanId] = useState<PlanId>(planId)
   const plan = plans[selectedPlanId]
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -18,8 +106,16 @@ export default function CheckoutClient ({
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
   const [country, setCountry] = useState('CZ')
+  const [paymentSetup, setPaymentSetup] = useState<PaymentSetup | null>(null)
 
-  async function createIntent () {
+  const customer = useMemo<CustomerDetails>(() => ({
+    email,
+    name,
+    company,
+    country
+  }), [company, country, email, name])
+
+  async function createPaymentSetup () {
     const response = await fetch('/api/stripe/checkout', {
       method: 'POST',
       headers: {
@@ -27,36 +123,37 @@ export default function CheckoutClient ({
       },
       body: JSON.stringify({
         plan: selectedPlanId,
-        customer: {
-          email,
-          name,
-          company,
-          country
-        }
+        customer
       })
     })
 
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data?.error ?? 'Unable to prepare checkout.')
+      throw new Error(data?.error ?? 'Unable to prepare payment.')
     }
 
-    return data as { checkoutUrl: string }
+    return data as PaymentSetup
   }
 
-  async function handleCheckout () {
+  async function handlePreparePayment () {
     try {
       setLoading(true)
       setError('')
 
-      const session = await createIntent()
-      window.location.href = session.checkoutUrl
+      const setup = await createPaymentSetup()
+      setPaymentSetup(setup)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to complete checkout.')
+      setError(err instanceof Error ? err.message : 'Unable to prepare payment.')
     } finally {
       setLoading(false)
     }
+  }
+
+  function selectPlan (id: PlanId) {
+    setSelectedPlanId(id)
+    setPaymentSetup(null)
+    setError('')
   }
 
   return (
@@ -88,7 +185,7 @@ export default function CheckoutClient ({
                   <button
                     key={id}
                     type='button'
-                    onClick={() => setSelectedPlanId(id)}
+                    onClick={() => selectPlan(id)}
                     className={`rounded-[1.5rem] border p-5 text-left transition ${
                       active
                         ? 'border-white/30 bg-white text-black'
@@ -141,7 +238,10 @@ export default function CheckoutClient ({
                   <input
                     type='email'
                     value={email}
-                    onChange={event => setEmail(event.target.value)}
+                    onChange={event => {
+                      setEmail(event.target.value)
+                      setPaymentSetup(null)
+                    }}
                     placeholder='name@example.com'
                     className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   />
@@ -151,7 +251,10 @@ export default function CheckoutClient ({
                   <input
                     type='text'
                     value={name}
-                    onChange={event => setName(event.target.value)}
+                    onChange={event => {
+                      setName(event.target.value)
+                      setPaymentSetup(null)
+                    }}
                     placeholder='Jane Doe'
                     className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   />
@@ -161,7 +264,10 @@ export default function CheckoutClient ({
                   <input
                     type='text'
                     value={company}
-                    onChange={event => setCompany(event.target.value)}
+                    onChange={event => {
+                      setCompany(event.target.value)
+                      setPaymentSetup(null)
+                    }}
                     placeholder='Optional'
                     className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   />
@@ -170,7 +276,10 @@ export default function CheckoutClient ({
                   Country
                   <select
                     value={country}
-                    onChange={event => setCountry(event.target.value)}
+                    onChange={event => {
+                      setCountry(event.target.value)
+                      setPaymentSetup(null)
+                    }}
                     className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   >
                     <option value='CZ'>Czechia</option>
@@ -181,23 +290,44 @@ export default function CheckoutClient ({
                 </label>
               </div>
               <p className='mt-4 text-sm leading-7 text-white/45'>
-                Stripe Checkout collects payment details on Stripe&apos;s hosted payment page.
-                Your app sends only customer details and the selected plan to Stripe.
+                Payment details stay inside Stripe Elements. This app receives only the selected plan and customer details.
               </p>
             </div>
 
-            <div className='mt-8 flex flex-col gap-4 sm:flex-row'>
-              <button
-                onClick={handleCheckout}
-                disabled={loading}
-                className='rounded-full bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
-              >
-                {loading ? 'Preparing checkout...' : 'Continue to secure checkout'}
-              </button>
+            <div className='mt-8'>
+              {!paymentSetup ? (
+                <button
+                  onClick={handlePreparePayment}
+                  disabled={loading || !stripePromise}
+                  className='rounded-full bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
+                >
+                  {loading ? 'Preparing payment...' : 'Enter payment details'}
+                </button>
+              ) : stripePromise ? (
+                <Elements
+                  stripe={stripePromise}
+                  options={{
+                    clientSecret: paymentSetup.clientSecret,
+                    appearance: {
+                      theme: 'stripe',
+                      variables: {
+                        borderRadius: '14px'
+                      }
+                    }
+                  }}
+                >
+                  <PaymentForm customer={customer} disabled={loading} />
+                </Elements>
+              ) : null}
             </div>
             {error ? (
               <p className='mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
                 {error}
+              </p>
+            ) : null}
+            {!stripePromise ? (
+              <p className='mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
+                Missing NEXT_PUBLIC_STRIPE_PUBLIC_KEY environment variable.
               </p>
             ) : null}
           </div>
@@ -227,10 +357,10 @@ export default function CheckoutClient ({
 
             <div className='mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-4'>
               <p className='text-xs uppercase tracking-[0.3em] text-white/35'>
-                Secure checkout
+                Secure payment
               </p>
               <ul className='mt-4 space-y-3 text-sm text-white/55'>
-                <li>Payment handled securely by Stripe.</li>
+                <li>Card and wallet fields are rendered by Stripe Elements.</li>
                 <li>Your license is generated after successful payment.</li>
                 <li>No payment details are stored by this app.</li>
               </ul>
@@ -238,12 +368,12 @@ export default function CheckoutClient ({
 
             <div className='mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-4'>
               <p className='text-sm leading-7 text-white/50'>
-                Click &quot;Continue to secure checkout&quot; to create a Stripe Checkout Session and open Stripe&apos;s hosted payment page.
+                Click &quot;Enter payment details&quot; to create a Stripe payment setup, then complete payment directly on this page.
               </p>
             </div>
 
             <p className='mt-8 text-sm leading-7 text-white/50'>
-              This flow uses Stripe Checkout. The browser redirects to Stripe&apos;s hosted payment page, then returns here on success or cancel.
+              This flow uses Stripe Elements, so the browser stays on this checkout page while Stripe securely collects payment details.
             </p>
           </aside>
         </section>

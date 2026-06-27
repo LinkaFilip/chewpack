@@ -1,42 +1,6 @@
 import Link from 'next/link'
 import { SeoSchema } from './SeoSchema'
 
-const pricingPlans = [
-  {
-    name: '3 months',
-    price: '20 EUR',
-    cadence: 'trial-friendly access',
-    description:
-      'Best for trying Chewpack on a real project before committing longer term.',
-    href: '/checkout?plan=3m',
-    badge: 'Starter',
-    accent: 'from-white to-white/70',
-    features: ['Immediate access', 'All editor tools', 'Stripe checkout']
-  },
-  {
-    name: '1 year',
-    price: '60 EUR',
-    cadence: 'billed once for a full year',
-    description:
-      'Best value for active type designers who want uninterrupted work across multiple projects.',
-    href: '/checkout?plan=1y',
-    badge: 'Best value',
-    accent: 'from-[#8df7c8] to-[#49c58d]',
-    features: ['Lower monthly cost', 'Priority support', 'Most popular choice']
-  },
-  {
-    name: 'Lifetime',
-    price: '149 EUR',
-    cadence: 'single purchase, no renewal',
-    description:
-      'Best for studios and long-term users who want to buy once and keep the tool in rotation.',
-    href: '/checkout?plan=lifetime',
-    badge: 'Own it',
-    accent: 'from-[#f6c66b] to-[#ff9f43]',
-    features: ['No renewal', 'Permanent license', 'Studio-friendly']
-  }
-]
-
 const features = [
   {
     title: 'Draw real letterforms',
@@ -93,18 +57,18 @@ export default function Home () {
                 outlines, checking spacing, and shipping a typeface that feels
                 intentional.
               </p>
-              <div className='mt-8 flex flex-col gap-4 sm:flex-row'>
-                <Link
-                  href='/checkout?plan=1y'
-                  className='rounded-full bg-white px-7 py-4 text-center text-sm font-semibold text-black transition hover:bg-white/85'
-                >
-                  See 1-year pricing
+            <div className='mt-8 flex flex-col gap-4 sm:flex-row'>
+              <Link
+                href='/checkout?plan=1y'
+                className='rounded-full bg-white px-7 py-4 text-center text-sm font-semibold text-black transition hover:bg-white/85'
+              >
+                  See checkout
                 </Link>
                 <a
-                  href='#pricing'
+                  href='#features'
                   className='rounded-full border border-white/15 px-7 py-4 text-center text-sm font-semibold text-white transition hover:bg-white/10'
                 >
-                  Compare plans
+                  See features
                 </a>
               </div>
               <div className='mt-8 flex flex-wrap gap-3 text-sm text-white/45'>
@@ -187,144 +151,6 @@ export default function Home () {
             ))}
           </section>
 
-          <section className='grid gap-8 py-16 md:grid-cols-[1fr_0.8fr]'>
-            <div className='max-w-2xl'>
-              <p className='text-sm uppercase tracking-[0.3em] text-white/35'>
-                Pricing
-              </p>
-              <h3 className='mt-4 max-w-xl text-4xl font-semibold tracking-tight md:text-5xl'>
-                Pick the license that matches how long you expect to ship with
-                it.
-              </h3>
-              <p className='mt-5 text-lg leading-8 text-white/60'>
-                Chewpack is sold as a focused license, not a vague subscription
-                wall. Choose the shortest plan that fits your workflow or lock
-                in longer access for a better effective price.
-              </p>
-              <div className='mt-8 grid gap-4 sm:grid-cols-3'>
-                <div className='rounded-2xl border border-white/10 bg-white/[0.04] p-4'>
-                  <p className='text-xs uppercase tracking-[0.25em] text-white/35'>
-                    Fast start
-                  </p>
-                  <p className='mt-2 text-sm leading-6 text-white/70'>
-                    Buy the 3-month option if you want to test the full editor
-                    on a live project.
-                  </p>
-                </div>
-                <div className='rounded-2xl border border-white/10 bg-white/[0.04] p-4'>
-                  <p className='text-xs uppercase tracking-[0.25em] text-white/35'>
-                    Best value
-                  </p>
-                  <p className='mt-2 text-sm leading-6 text-white/70'>
-                    The 1-year license is the easiest upgrade when you know you
-                    will keep designing.
-                  </p>
-                </div>
-                <div className='rounded-2xl border border-white/10 bg-white/[0.04] p-4'>
-                  <p className='text-xs uppercase tracking-[0.25em] text-white/35'>
-                    One purchase
-                  </p>
-                  <p className='mt-2 text-sm leading-6 text-white/70'>
-                    Lifetime makes sense if you want to own the workflow instead
-                    of thinking about renewals.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className='rounded-[2rem] border border-white/10 bg-[#0b1020] p-6 shadow-2xl shadow-black/30'>
-              <div className='flex items-center justify-between'>
-                <p className='text-sm uppercase tracking-[0.3em] text-white/35'>
-                  Payment stack
-                </p>
-                <span className='rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-200'>
-                  Secure Stripe flow
-                </span>
-              </div>
-              <div className='mt-6 grid gap-3'>
-                {[
-                  'Card payment',
-                  'Apple Pay',
-                  'Google Pay',
-                  'Invoice-ready receipt'
-                ].map(item => (
-                  <div
-                    key={item}
-                    className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3'
-                  >
-                    <span className='text-sm text-white/75'>{item}</span>
-                    <span className='h-2.5 w-2.5 rounded-full bg-white/30' />
-                  </div>
-                ))}
-              </div>
-              <Link
-                href='/checkout?plan=1y'
-                className='mt-6 inline-flex w-full items-center justify-center rounded-full bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85'
-              >
-                Choose the 1-year plan
-              </Link>
-            </div>
-          </section>
-
-          <section id='pricing' className='pb-20'>
-            <div className='mb-6 flex items-end justify-between gap-4'>
-              <div>
-                <p className='text-sm uppercase tracking-[0.3em] text-white/35'>
-                  License cards
-                </p>
-                <h3 className='mt-3 text-3xl font-semibold tracking-tight md:text-4xl'>
-                  Built to make the decision feel obvious.
-                </h3>
-              </div>
-              <p className='max-w-md text-sm leading-6 text-white/50'>
-                Each card is designed to answer the only real buying question:
-                how long do you want to keep using the editor?
-              </p>
-            </div>
-            <div className='grid gap-5 lg:grid-cols-3'>
-              {pricingPlans.map(plan => (
-                <article
-                  key={plan.name}
-                  className='relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-6'
-                >
-                  <div
-                    className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${plan.accent}`}
-                  />
-                  <div className='flex items-center justify-between'>
-                    <span className='rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.25em] text-white/45'>
-                      {plan.badge}
-                    </span>
-                    <span className='text-xs uppercase tracking-[0.25em] text-white/30'>
-                      {plan.name}
-                    </span>
-                  </div>
-                  <div className='mt-6'>
-                    <p className='text-sm text-white/45'>{plan.cadence}</p>
-                    <p className='mt-3 text-4xl font-semibold tracking-tight'>
-                      {plan.price}
-                    </p>
-                    <p className='mt-4 text-sm leading-7 text-white/60'>
-                      {plan.description}
-                    </p>
-                  </div>
-                  <ul className='mt-6 space-y-3 text-sm text-white/75'>
-                    {plan.features.map(feature => (
-                      <li key={feature} className='flex items-center gap-3'>
-                        <span className='h-2 w-2 rounded-full bg-white/50' />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href={plan.href}
-                    className='mt-7 inline-flex w-full items-center justify-center rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-black'
-                  >
-                    Select {plan.name}
-                  </Link>
-                </article>
-              ))}
-            </div>
-          </section>
         </div>
       </main>
     </>

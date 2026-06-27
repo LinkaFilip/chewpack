@@ -1,47 +1,5 @@
 import { NextResponse } from 'next/server'
-
-type PlanId = '3m' | '1y' | 'lifetime'
-
-const plans: Record<
-  PlanId,
-  {
-    mode: 'subscription' | 'payment'
-    amount: string
-    name: string
-    description: string
-    recurring?: {
-      interval: 'month'
-      interval_count: string
-    }
-  }
-> = {
-  '3m': {
-    mode: 'subscription',
-    amount: '2000',
-    name: '3-month license',
-    description: 'Chewpack license for 3 months',
-    recurring: {
-      interval: 'month',
-      interval_count: '3'
-    }
-  },
-  '1y': {
-    mode: 'subscription',
-    amount: '6000',
-    name: '1-year license',
-    description: 'Chewpack license for 1 year',
-    recurring: {
-      interval: 'month',
-      interval_count: '12'
-    }
-  },
-  lifetime: {
-    mode: 'payment',
-    amount: '14900',
-    name: 'Lifetime license',
-    description: 'Chewpack lifetime license'
-  }
-}
+import { isPlanId, plans } from '../../../plans'
 
 export async function POST (request: Request) {
   const secretKey = process.env.STRIPE_SECRET_KEY
@@ -55,28 +13,40 @@ export async function POST (request: Request) {
   }
 
   const payload = (await request.json().catch(() => ({}))) as {
-    plan?: PlanId
+    plan?: string
+    customer?: {
+      email?: string
+      name?: string
+      company?: string
+      country?: string
+    }
   }
-  const planId = payload.plan && payload.plan in plans ? payload.plan : '1y'
+  const planId = isPlanId(payload.plan) ? payload.plan : '1y'
   const plan = plans[planId]
+  const customer = payload.customer ?? {}
 
   const body = new URLSearchParams()
   body.set('mode', plan.mode)
   body.set('success_url', `${baseUrl}/checkout/success`)
   body.set('cancel_url', `${baseUrl}/checkout/cancel`)
+  body.set('billing_address_collection', 'required')
   body.set('line_items[0][quantity]', '1')
   body.set('line_items[0][price_data][currency]', 'eur')
-  body.set('line_items[0][price_data][unit_amount]', plan.amount)
-  body.set('line_items[0][price_data][product_data][name]', plan.name)
-  body.set('line_items[0][price_data][product_data][description]', plan.description)
-  if (plan.recurring) {
-    body.set('line_items[0][price_data][recurring][interval]', plan.recurring.interval)
+  body.set('line_items[0][price_data][unit_amount]', plan.stripe.amount)
+  body.set('line_items[0][price_data][product_data][name]', plan.stripe.productName)
+  body.set('line_items[0][price_data][product_data][description]', plan.stripe.description)
+  if (plan.stripe.recurring) {
+    body.set('line_items[0][price_data][recurring][interval]', plan.stripe.recurring.interval)
     body.set(
       'line_items[0][price_data][recurring][interval_count]',
-      plan.recurring.interval_count
+      plan.stripe.recurring.interval_count
     )
   }
   body.set('metadata[plan_id]', planId)
+  if (customer.email) body.set('customer_email', customer.email)
+  if (customer.name) body.set('client_reference_id', customer.name)
+  if (customer.company) body.set('metadata[company]', customer.company)
+  if (customer.country) body.set('metadata[country]', customer.country)
 
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',

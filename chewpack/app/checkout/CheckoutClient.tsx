@@ -2,53 +2,21 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-
-type PlanId = '3m' | '1y' | 'lifetime'
-
-const plans: Record<
-  PlanId,
-  {
-    title: string
-    price: string
-    billing: string
-    subtitle: string
-    highlight: string
-  }
-> = {
-  '3m': {
-    title: '3-month license',
-    price: '20 EUR',
-    billing: 'Billed once',
-    subtitle: 'A compact option for one project or a short evaluation cycle.',
-    highlight: 'Short commitment'
-  },
-  '1y': {
-    title: '1-year license',
-    price: '60 EUR',
-    billing: 'Billed once',
-    subtitle: 'The strongest value for ongoing work and repeat clients.',
-    highlight: 'Best value'
-  },
-  lifetime: {
-    title: 'Lifetime license',
-    price: '149 EUR',
-    billing: 'Billed once',
-    subtitle: 'Buy once and keep the workflow without renewal pressure.',
-    highlight: 'Own it'
-  }
-}
+import { isPlanId, planOrder, plans } from '../plans'
 
 export default function CheckoutClient ({
   planId: initialPlanId
 }: {
   planId?: string
 }) {
-  const planId = (initialPlanId === '3m' || initialPlanId === '1y' || initialPlanId === 'lifetime'
-    ? initialPlanId
-    : '1y') as PlanId
+  const planId = isPlanId(initialPlanId) ? initialPlanId : '1y'
   const plan = plans[planId]
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [company, setCompany] = useState('')
+  const [country, setCountry] = useState('CZ')
 
   const checkoutLabel = useMemo(() => {
     if (planId === 'lifetime') return 'Buy lifetime access'
@@ -66,7 +34,15 @@ export default function CheckoutClient ({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ plan: planId })
+        body: JSON.stringify({
+          plan: planId,
+          customer: {
+            email,
+            name,
+            company,
+            country
+          }
+        })
       })
 
       const data = await response.json()
@@ -106,19 +82,106 @@ export default function CheckoutClient ({
               {plan.subtitle}
             </p>
 
+            <div className='mt-8 grid gap-3 md:grid-cols-3'>
+              {planOrder.map(id => {
+                const option = plans[id]
+                const active = id === planId
+                return (
+                  <Link
+                    key={id}
+                    href={`/checkout?plan=${id}`}
+                    className={`rounded-[1.5rem] border p-5 transition ${
+                      active
+                        ? 'border-white/30 bg-white text-black'
+                        : 'border-white/10 bg-black/20 text-white hover:border-white/20 hover:bg-white/[0.05]'
+                    }`}
+                  >
+                    <p
+                      className={`text-xs uppercase tracking-[0.28em] ${
+                        active ? 'text-black/55' : 'text-white/35'
+                      }`}
+                    >
+                      {option.highlight}
+                    </p>
+                    <p className='mt-3 text-lg font-semibold'>{option.title}</p>
+                    <p
+                      className={`mt-2 text-sm ${
+                        active ? 'text-black/65' : 'text-white/55'
+                      }`}
+                    >
+                      {option.price}
+                    </p>
+                  </Link>
+                )
+              })}
+            </div>
+
             <div className='mt-8 grid gap-4 sm:grid-cols-2'>
-              <div className='rounded-2xl border border-white/10 bg-black/20 p-5'>
-                <p className='text-sm text-white/45'>Plan selected</p>
-                <p className='mt-2 font-mono text-sm text-white/80'>{planId}</p>
-              </div>
               <div className='rounded-2xl border border-white/10 bg-black/20 p-5'>
                 <p className='text-sm text-white/45'>Billing</p>
                 <p className='mt-2 text-lg font-semibold'>{plan.billing}</p>
               </div>
+              <div className='rounded-2xl border border-white/10 bg-black/20 p-5'>
+                <p className='text-sm text-white/45'>Access cadence</p>
+                <p className='mt-2 text-lg font-semibold'>{plan.cadence}</p>
+              </div>
+            </div>
+
+            <div className='mt-8 rounded-[1.75rem] border border-white/10 bg-black/20 p-6'>
+              <p className='text-sm uppercase tracking-[0.28em] text-white/35'>
+                Customer details
+              </p>
+              <div className='mt-5 grid gap-4 sm:grid-cols-2'>
+                <label className='grid gap-2 text-sm text-white/65'>
+                  Email
+                  <input
+                    type='email'
+                    value={email}
+                    onChange={event => setEmail(event.target.value)}
+                    placeholder='name@example.com'
+                    className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                  />
+                </label>
+                <label className='grid gap-2 text-sm text-white/65'>
+                  Full name
+                  <input
+                    type='text'
+                    value={name}
+                    onChange={event => setName(event.target.value)}
+                    placeholder='Jane Doe'
+                    className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                  />
+                </label>
+                <label className='grid gap-2 text-sm text-white/65'>
+                  Company
+                  <input
+                    type='text'
+                    value={company}
+                    onChange={event => setCompany(event.target.value)}
+                    placeholder='Optional'
+                    className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                  />
+                </label>
+                <label className='grid gap-2 text-sm text-white/65'>
+                  Country
+                  <input
+                    type='text'
+                    value={country}
+                    onChange={event => setCountry(event.target.value.toUpperCase())}
+                    placeholder='CZ'
+                    maxLength={2}
+                    className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                  />
+                </label>
+              </div>
+              <p className='mt-4 text-sm leading-7 text-white/45'>
+                Payment details are collected by Stripe on the hosted checkout
+                page. This app only forwards customer info and redirect URLs.
+              </p>
             </div>
 
             <div className='mt-8 grid gap-3 sm:grid-cols-3'>
-              {['Card payment', 'Apple Pay', 'Google Pay'].map(item => (
+              {['Card payment', 'Bank debit via Stripe', 'Wallets'].map(item => (
                 <div
                   key={item}
                   className='rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/75'
@@ -136,11 +199,25 @@ export default function CheckoutClient ({
               >
                 {loading ? 'Opening Stripe...' : checkoutLabel}
               </button>
-              <Link
-                href='/#pricing'
-                className='rounded-full border border-white/15 px-7 py-4 text-center text-sm font-semibold text-white transition hover:bg-white/10'
+              <button
+                type='button'
+                onClick={() => {
+                  setEmail('')
+                  setName('')
+                  setCompany('')
+                  setCountry('CZ')
+                }}
+                className='rounded-full border border-white/15 px-7 py-4 text-sm font-semibold text-white transition hover:bg-white/10'
               >
-                Compare plans
+                Clear details
+              </button>
+            </div>
+            <div className='mt-4'>
+              <Link
+                href='/'
+                className='inline-flex rounded-full border border-white/15 px-7 py-4 text-center text-sm font-semibold text-white transition hover:bg-white/10'
+              >
+                Back to product
               </Link>
             </div>
 
@@ -163,6 +240,10 @@ export default function CheckoutClient ({
               <div className='flex items-center justify-between'>
                 <span>Access type</span>
                 <span>{plan.highlight}</span>
+              </div>
+              <div className='flex items-center justify-between'>
+                <span>Billing</span>
+                <span>{plan.billing}</span>
               </div>
               <div className='flex items-center justify-between border-t border-white/10 pt-4 text-white'>
                 <span className='font-semibold'>Total today</span>

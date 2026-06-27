@@ -117,7 +117,7 @@ export default function CheckoutClient ({
 
         const publicKey = process.env.STRIPE_PUBLIC_KEY
         if (!publicKey) {
-          throw new Error('Missing NEXT_PUBLIC_STRIPE_PUBLIC_KEY environment variable.')
+          throw new Error('Missing STRIPE_PUBLIC_KEY environment variable.')
         }
 
         const stripe = window.Stripe(publicKey)

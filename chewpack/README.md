@@ -41,5 +41,8 @@ For Netlify, define these variables in the site settings:
 
 - `STRIPE_SECRET_KEY` for the server route at `app/api/stripe/checkout/route.ts`
 - `NEXT_PUBLIC_STRIPE_PUBLIC_KEY` for the embedded Stripe client in `app/checkout/CheckoutClient.tsx`
+- `STRIPE_WEBHOOK_SECRET` for `app/api/stripe/webhook/route.ts`
 
 The `NEXT_PUBLIC_` prefix is required so the public key is available in the browser bundle.
+
+Before switching Stripe Checkout to live mode for EU digital software sales, review whether Checkout Sessions should enable Stripe automatic tax.

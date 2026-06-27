@@ -11,8 +11,8 @@ export default function CheckoutSuccessPage () {
           Successful payment.
         </h1>
         <p className='mt-5 text-lg leading-8 text-white/65'>
-          Your subscription is active. You will be redirected to the root
-          shortly.
+          Stripe received the checkout result. Final access should be granted
+          only after your webhook confirms the completed payment.
         </p>
         <Link
           href='/'

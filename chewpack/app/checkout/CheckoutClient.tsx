@@ -78,18 +78,18 @@ function PaymentForm ({
 
   return (
     <form onSubmit={handlePaymentSubmit} className='mt-6 space-y-5'>
-      <div className='rounded-3xl border border-white/10 bg-white p-4 text-black'>
+      <div className='rounded-lg border border-white/10 bg-white p-4 text-black'>
         <PaymentElement />
       </div>
       <button
         type='submit'
         disabled={disabled || submitting || !stripe || !elements}
-        className='w-full rounded-full bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
+        className='w-full rounded-lg bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
       >
         {submitting ? 'Confirming payment...' : 'Pay securely'}
       </button>
       {error ? (
-        <p className='rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
+        <p className='rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
           {error}
         </p>
       ) : null}
@@ -191,7 +191,7 @@ export default function CheckoutClient ({
                     key={id}
                     type='button'
                     onClick={() => selectPlan(id)}
-                    className={`rounded-3xl border p-5 text-left transition ${
+                    className={`rounded-lg border p-5 text-left transition ${
                       active
                         ? 'border-white/30 bg-white text-black'
                         : 'border-white/10 bg-black/20 text-white hover:border-white/20 hover:bg-white/5'
@@ -213,7 +213,7 @@ export default function CheckoutClient ({
                       {option.price}
                     </p>
                     {active ? (
-                      <span className='mt-4 inline-flex rounded-full bg-black/10 px-3 py-1 text-xs font-semibold text-black/70'>
+                      <span className='mt-4 inline-flex rounded-lg bg-black/10 px-3 py-1 text-xs font-semibold text-black/70'>
                         Selected
                       </span>
                     ) : null}
@@ -223,11 +223,11 @@ export default function CheckoutClient ({
             </div>
 
             <div className='mt-8 grid gap-4 sm:grid-cols-2'>
-              <div className='rounded-2xl border border-white/10 bg-white/4 p-5 text-white/70'>
+              <div className='rounded-lg border border-white/10 bg-white/4 p-5 text-white/70'>
                 <p className='text-sm opacity-70'>Billing</p>
                 <p className='mt-2 text-lg font-semibold'>{plan.billing}</p>
               </div>
-              <div className='rounded-2xl border border-white/10 bg-white/4 p-5 text-white/70'>
+              <div className='rounded-lg border border-white/10 bg-white/4 p-5 text-white/70'>
                 <p className='text-sm opacity-70'>Access cadence</p>
                 <p className='mt-2 text-lg font-semibold'>{plan.cadence}</p>
               </div>
@@ -248,7 +248,7 @@ export default function CheckoutClient ({
                       setPaymentSetup(null)
                     }}
                     placeholder='name@example.com'
-                    className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                    className='rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   />
                 </label>
                 <label className='grid gap-2 text-sm text-white/65'>
@@ -261,7 +261,7 @@ export default function CheckoutClient ({
                       setPaymentSetup(null)
                     }}
                     placeholder='Jane Doe'
-                    className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                    className='rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   />
                 </label>
                 <label className='grid gap-2 text-sm text-white/65'>
@@ -274,7 +274,7 @@ export default function CheckoutClient ({
                       setPaymentSetup(null)
                     }}
                     placeholder='Optional'
-                    className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                    className='rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   />
                 </label>
                 <label className='grid gap-2 text-sm text-white/65'>
@@ -285,7 +285,7 @@ export default function CheckoutClient ({
                       setCountry(event.target.value)
                       setPaymentSetup(null)
                     }}
-                    className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                    className='rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   >
                     <option value='CZ' className='bg-[#0b1020] text-white'>Czechia</option>
                     <option value='SK' className='bg-[#0b1020] text-white'>Slovakia</option>
@@ -304,7 +304,7 @@ export default function CheckoutClient ({
               <button
                 onClick={handlePreparePayment}
                 disabled={loading || !stripePromise || !email.trim()}
-                className='rounded-full bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
+                className='rounded-lg bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
               >
                 {!email.trim() ? (
                     <p className='mt-3 text-sm text-white/40'>
@@ -331,12 +331,12 @@ export default function CheckoutClient ({
               ) : null}
             </div>
             {error ? (
-              <p className='mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
+              <p className='mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
                 {error}
               </p>
             ) : null}
             {!stripePromise ? (
-              <p className='mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
+              <p className='mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
                 Missing NEXT_PUBLIC_STRIPE_PUBLIC_KEY environment variable.
               </p>
             ) : null}
@@ -364,27 +364,6 @@ export default function CheckoutClient ({
                 <span className='text-xl font-semibold'>{plan.price}</span>
               </div>
             </div>
-
-            <div className='mt-8 rounded-3xl border border-white/10 bg-white/3 p-4'>
-              <p className='text-xs uppercase tracking-[0.3em] text-white/35'>
-                Secure payment
-              </p>
-              <ul className='mt-4 space-y-3 text-sm text-white/55'>
-                <li>Card and wallet fields are rendered by Stripe Elements.</li>
-                <li>Your license is generated after successful payment.</li>
-                <li>No payment details are stored by this app.</li>
-              </ul>
-            </div>
-
-            <div className='mt-8 rounded-3xl border border-white/10 bg-white/3 p-4'>
-              <p className='text-sm leading-7 text-white/50'>
-                Click &quot;Enter payment details&quot; to create a Stripe payment setup, then complete payment directly on this page.
-              </p>
-            </div>
-
-            <p className='mt-8 text-sm leading-7 text-white/50'>
-              This flow uses Stripe Elements, so the browser stays on this checkout page while Stripe securely collects payment details.
-            </p>
           </aside>
         </section>
       </div>

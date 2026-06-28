@@ -17,8 +17,14 @@ function parseStripeSignature (value: string) {
   return { timestamp, signatures }
 }
 
+function normalizeWebhookSecret (value: string) {
+  return value.trim().replace(/^['"]|['"]$/g, '')
+}
+
 export async function POST (request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+    ? normalizeWebhookSecret(process.env.STRIPE_WEBHOOK_SECRET)
+    : undefined
   if (!webhookSecret) {
     return NextResponse.json(
       { error: 'Missing STRIPE_WEBHOOK_SECRET environment variable.' },

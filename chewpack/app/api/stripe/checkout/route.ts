@@ -50,6 +50,7 @@ export async function POST (request: Request) {
     body.set('metadata[plan_title]', plan.title)
 
     if (customerEmail) body.set('receipt_email', customerEmail)
+    if (customerEmail) body.set('metadata[customer_email]', customerEmail)
     if (customerName) body.set('metadata[customer_name]', customerName)
     if (company) body.set('metadata[company]', company)
     if (country) body.set('metadata[country]', country)
@@ -122,6 +123,7 @@ export async function POST (request: Request) {
   body.set('expand[1]', 'latest_invoice.payment_intent')
   body.set('metadata[plan_id]', planId)
   body.set('metadata[plan_title]', plan.title)
+  if (customerEmail) body.set('metadata[customer_email]', customerEmail)
   if (company) body.set('metadata[company]', company)
   if (country) body.set('metadata[country]', country)
 

@@ -170,7 +170,7 @@ export default function CheckoutClient ({
           </Link>
         </div>
 
-        <section className='mt-10 grid gap-8 rounded-[2.5rem] border border-white/10 bg-white/3 p-8 md:grid-cols-[1.1fr_0.9fr] md:p-12'>
+        <section className='mt-10 grid gap-8 rounded-lg border border-white/10 bg-white/3 p-8 md:grid-cols-[1.1fr_0.9fr] md:p-12'>
           <div>
             <p className='text-sm uppercase tracking-[0.3em] text-white/35'>
               {plan.highlight}
@@ -233,7 +233,7 @@ export default function CheckoutClient ({
               </div>
             </div>
 
-            <div className='mt-8 rounded-[1.75rem] border border-white/10 bg-black/20 p-6'>
+            <div className='mt-8 rounded-lg border border-white/10 bg-black/20 p-6'>
               <p className='text-sm uppercase tracking-[0.28em] text-white/35'>
                 Customer details
               </p>

@@ -1,5 +1,11 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 import { NextResponse } from 'next/server'
+import { finishStripeEvent, insertStripeEvent } from '../../../lib/licenses/db'
+import {
+  cancelSubscriptionLicense,
+  issueLifetimeLicenseFromPaymentIntent,
+  issueSubscriptionEntitlementFromInvoice
+} from '../../../lib/licenses/service'
 
 function parseStripeSignature (value: string) {
   const entries = value.split(',').map(part => part.trim())
@@ -54,37 +60,60 @@ export async function POST (request: Request) {
   }
 
   const event = JSON.parse(rawBody) as {
+    id?: string
     type?: string
     data?: {
       object?: {
         id?: string
         status?: string
         customer?: string
+        subscription?: string
         customer_email?: string
         customer_email_address?: string
+        receipt_email?: string
+        lines?: unknown
+        subscription_details?: unknown
         metadata?: Record<string, string>
       }
     }
   }
 
-  if (event.type === 'payment_intent.succeeded') {
-    const paymentIntent = event.data?.object
-    console.log('Stripe payment completed', {
-      id: paymentIntent?.id,
-      status: paymentIntent?.status,
-      metadata: paymentIntent?.metadata
-    })
-  }
+  if (event.id && event.type) {
+    const shouldProcess = await insertStripeEvent(event.id, event.type)
 
-  if (event.type === 'invoice.paid') {
-    const invoice = event.data?.object
-    console.log('Stripe subscription invoice paid', {
-      id: invoice?.id,
-      status: invoice?.status,
-      customer: invoice?.customer,
-      customer_email: invoice?.customer_email,
-      metadata: invoice?.metadata
-    })
+    if (!shouldProcess) {
+      return NextResponse.json({ received: true, duplicate: true })
+    }
+
+    try {
+      if (event.type === 'payment_intent.succeeded') {
+        const result = await issueLifetimeLicenseFromPaymentIntent(event.data?.object ?? {})
+        await finishStripeEvent(event.id, result.reason ?? 'lifetime_processed')
+      } else if (event.type === 'invoice.paid') {
+        const result = await issueSubscriptionEntitlementFromInvoice(event.data?.object as never ?? {})
+        await finishStripeEvent(event.id, result.reason ?? 'invoice_processed')
+      } else if (
+        event.type === 'customer.subscription.deleted' ||
+        event.type === 'invoice.payment_failed'
+      ) {
+        const object = event.data?.object
+        const subscriptionId = event.type === 'customer.subscription.deleted'
+          ? object?.id
+          : object?.subscription
+
+        if (subscriptionId) {
+          await cancelSubscriptionLicense(subscriptionId)
+        }
+
+        await finishStripeEvent(event.id, 'subscription_access_stopped')
+      } else {
+        await finishStripeEvent(event.id, 'ignored')
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown webhook error.'
+      await finishStripeEvent(event.id, 'failed', message)
+      return NextResponse.json({ error: message }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ received: true })

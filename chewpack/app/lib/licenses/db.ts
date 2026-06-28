@@ -28,6 +28,11 @@ export type LicenseActivationRecord = {
   last_check_at: string
 }
 
+type StripeEventRecord = {
+  id: string
+  result: string
+}
+
 type DbValue = string | number | boolean | null
 type DbRecord = Record<string, DbValue>
 
@@ -108,6 +113,26 @@ export async function insertStripeEvent (eventId: string, type: string) {
     headers: { Prefer: 'return=representation' },
     allowConflict: true
   })
+
+  if (!rows?.[0]) {
+    const existing = await selectOne<StripeEventRecord>(
+      `/stripe_events?id=eq.${filterValue(eventId)}&select=id,result`
+    )
+
+    if (existing?.result === 'failed' || existing?.result === 'not_subscription_invoice') {
+      await supabaseRequest(`/stripe_events?id=eq.${filterValue(eventId)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          result: 'processing',
+          error: null,
+          processed_at: new Date().toISOString()
+        }),
+        headers: { Prefer: 'return=minimal' }
+      })
+
+      return true
+    }
+  }
 
   return Boolean(rows?.[0])
 }

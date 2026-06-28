@@ -35,10 +35,18 @@ type StripeInvoice = {
   id?: string
   customer?: string | null
   customer_email?: string | null
+  customer_email_address?: string | null
   subscription?: string | null
   metadata?: Record<string, string>
   subscription_details?: {
+    subscription?: string | null
     metadata?: Record<string, string>
+  }
+  parent?: {
+    subscription_details?: {
+      subscription?: string | null
+      metadata?: Record<string, string>
+    }
   }
   lines?: {
     data?: Array<{
@@ -49,25 +57,96 @@ type StripeInvoice = {
   }
 }
 
+type StripeSubscription = {
+  id?: string
+  customer?: string | null
+  metadata?: Record<string, string>
+  items?: {
+    data?: Array<{
+      price?: {
+        id?: string
+      }
+    }>
+  }
+}
+
+type StripeCustomer = {
+  id?: string
+  email?: string | null
+}
+
 function durationMonthsForPlan (planId: PlanId) {
   if (planId === 'lifetime') return 0
   return Number(plans[planId].stripe.recurring?.interval_count ?? 0)
 }
 
-function resolveInvoicePlanId (invoice: StripeInvoice) {
+function getStripeSecretKey () {
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (!secretKey) {
+    throw new Error('Missing STRIPE_SECRET_KEY environment variable.')
+  }
+
+  return secretKey
+}
+
+async function fetchStripeResource<T> (path: string) {
+  const response = await fetch(`https://api.stripe.com/v1/${path.replace(/^\//, '')}`, {
+    headers: {
+      Authorization: `Bearer ${getStripeSecretKey()}`
+    },
+    cache: 'no-store'
+  })
+
+  const payload = await response.json()
+
+  if (!response.ok) {
+    throw new Error(payload?.error?.message ?? `Stripe lookup failed for ${path}.`)
+  }
+
+  return payload as T
+}
+
+function resolveInvoiceSubscriptionId (invoice: StripeInvoice) {
+  return invoice.subscription ??
+    invoice.subscription_details?.subscription ??
+    invoice.parent?.subscription_details?.subscription ??
+    null
+}
+
+function resolveInvoicePlanId (invoice: StripeInvoice, subscription?: StripeSubscription | null) {
   const metadataPlan =
     invoice.metadata?.plan_id ??
-    invoice.subscription_details?.metadata?.plan_id
+    invoice.subscription_details?.metadata?.plan_id ??
+    invoice.parent?.subscription_details?.metadata?.plan_id ??
+    subscription?.metadata?.plan_id
 
   if (isPlanId(metadataPlan)) {
     return metadataPlan
   }
 
-  const priceId = invoice.lines?.data?.[0]?.price?.id
+  const priceId = invoice.lines?.data?.[0]?.price?.id ?? subscription?.items?.data?.[0]?.price?.id
   if (priceId && priceId === process.env.STRIPE_PRICE_3M) return '3m'
   if (priceId && priceId === process.env.STRIPE_PRICE_1Y) return '1y'
 
   return null
+}
+
+async function resolveInvoiceEmail (invoice: StripeInvoice, subscription?: StripeSubscription | null) {
+  const email =
+    invoice.customer_email ??
+    invoice.customer_email_address ??
+    invoice.metadata?.customer_email ??
+    invoice.subscription_details?.metadata?.customer_email ??
+    invoice.parent?.subscription_details?.metadata?.customer_email ??
+    subscription?.metadata?.customer_email
+
+  if (email) return email
+
+  const customerId = invoice.customer ?? subscription?.customer
+  if (!customerId) return null
+
+  const customer = await fetchStripeResource<StripeCustomer>(`customers/${customerId}`)
+  return customer.email ?? null
 }
 
 function activationPayload (license: LicenseRecord) {
@@ -156,14 +235,18 @@ export async function issueLifetimeLicenseFromPaymentIntent (paymentIntent: Stri
 }
 
 export async function issueSubscriptionEntitlementFromInvoice (invoice: StripeInvoice) {
-  const planId = resolveInvoicePlanId(invoice)
+  const subscriptionId = resolveInvoiceSubscriptionId(invoice)
+  const subscription = subscriptionId
+    ? await fetchStripeResource<StripeSubscription>(`subscriptions/${subscriptionId}`)
+    : null
+  const planId = resolveInvoicePlanId(invoice, subscription)
 
-  if (!invoice.id || !invoice.subscription || !planId || planId === 'lifetime') {
+  if (!invoice.id || !subscriptionId || !planId || planId === 'lifetime') {
     return { issued: false, reason: 'not_subscription_invoice' }
   }
 
   const months = durationMonthsForPlan(planId)
-  const existing = await findLicenseBySubscription(invoice.subscription)
+  const existing = await findLicenseBySubscription(subscriptionId)
 
   if (existing) {
     if (existing.last_invoice_id === invoice.id) {
@@ -190,7 +273,7 @@ export async function issueSubscriptionEntitlementFromInvoice (invoice: StripeIn
     return { issued: false, reason: 'extended', license }
   }
 
-  const email = invoice.customer_email ?? invoice.metadata?.customer_email
+  const email = await resolveInvoiceEmail(invoice, subscription)
   if (!email) {
     throw new Error(`Invoice ${invoice.id} does not include a customer email.`)
   }
@@ -198,8 +281,8 @@ export async function issueSubscriptionEntitlementFromInvoice (invoice: StripeIn
   const license = await createCodeLicense({
     planId,
     customerEmail: email,
-    subscriptionId: invoice.subscription,
-    customerId: invoice.customer ?? null,
+    subscriptionId,
+    customerId: invoice.customer ?? subscription?.customer ?? null,
     invoiceId: invoice.id,
     pendingMonths: months,
     lifetime: false

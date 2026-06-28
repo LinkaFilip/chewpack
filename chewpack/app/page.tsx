@@ -136,9 +136,11 @@ export default function Home () {
             </div>
           </section>
 
+
+        </div>
           <section
             id='features'
-            className='grid gap-5 border-y border-white/10 bg-white/[0.03] px-0 py-16 md:grid-cols-2'
+            className='grid gap-5 border-y border-white/10 bg-white/[0.03] px-6 py-16 md:grid-cols-2'
           >
             {features.map(feature => (
               <article
@@ -150,8 +152,6 @@ export default function Home () {
               </article>
             ))}
           </section>
-
-        </div>
       </main>
     </>
   )

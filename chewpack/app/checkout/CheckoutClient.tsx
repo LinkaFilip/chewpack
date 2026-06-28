@@ -19,8 +19,6 @@ type CustomerDetails = {
 
 type PaymentSetup = {
   clientSecret: string
-  intentId: string
-  subscriptionId?: string
   planId: PlanId
 }
 
@@ -45,10 +43,17 @@ function PaymentForm ({
       setSubmitting(true)
       setError('')
 
+      const submitResult = await elements.submit()
+
+      if (submitResult.error) {
+        setError(submitResult.error.message ?? 'Payment details are incomplete.')
+        return
+      }
+
       const result = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success`,
+          return_url: `${window.location.origin}/checkout/success?`,
           payment_method_data: {
             billing_details: {
               email: customer.email || undefined,
@@ -165,7 +170,7 @@ export default function CheckoutClient ({
           </Link>
         </div>
 
-        <section className='mt-10 grid gap-8 rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-8 md:grid-cols-[1.1fr_0.9fr] md:p-12'>
+        <section className='mt-10 grid gap-8 rounded-[2.5rem] border border-white/10 bg-white/3 p-8 md:grid-cols-[1.1fr_0.9fr] md:p-12'>
           <div>
             <p className='text-sm uppercase tracking-[0.3em] text-white/35'>
               {plan.highlight}
@@ -186,10 +191,10 @@ export default function CheckoutClient ({
                     key={id}
                     type='button'
                     onClick={() => selectPlan(id)}
-                    className={`rounded-[1.5rem] border p-5 text-left transition ${
+                    className={`rounded-3xl border p-5 text-left transition ${
                       active
                         ? 'border-white/30 bg-white text-black'
-                        : 'border-white/10 bg-black/20 text-white hover:border-white/20 hover:bg-white/[0.05]'
+                        : 'border-white/10 bg-black/20 text-white hover:border-white/20 hover:bg-white/5'
                     }`}
                   >
                     <p
@@ -218,11 +223,11 @@ export default function CheckoutClient ({
             </div>
 
             <div className='mt-8 grid gap-4 sm:grid-cols-2'>
-              <div className='rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-white/70'>
+              <div className='rounded-2xl border border-white/10 bg-white/4 p-5 text-white/70'>
                 <p className='text-sm opacity-70'>Billing</p>
                 <p className='mt-2 text-lg font-semibold'>{plan.billing}</p>
               </div>
-              <div className='rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-white/70'>
+              <div className='rounded-2xl border border-white/10 bg-white/4 p-5 text-white/70'>
                 <p className='text-sm opacity-70'>Access cadence</p>
                 <p className='mt-2 text-lg font-semibold'>{plan.cadence}</p>
               </div>
@@ -234,7 +239,7 @@ export default function CheckoutClient ({
               </p>
               <div className='mt-5 grid gap-4 sm:grid-cols-2'>
                 <label className='grid gap-2 text-sm text-white/65'>
-                  Email
+                  Email <span className='text-white/35'>required</span>
                   <input
                     type='email'
                     value={email}
@@ -282,10 +287,10 @@ export default function CheckoutClient ({
                     }}
                     className='rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
                   >
-                    <option value='CZ'>Czechia</option>
-                    <option value='SK'>Slovakia</option>
-                    <option value='DE'>Germany</option>
-                    <option value='AT'>Austria</option>
+                    <option value='CZ' className='bg-[#0b1020] text-white'>Czechia</option>
+                    <option value='SK' className='bg-[#0b1020] text-white'>Slovakia</option>
+                    <option value='DE' className='bg-[#0b1020] text-white'>Germany</option>
+                    <option value='AT' className='bg-[#0b1020] text-white'>Austria</option>
                   </select>
                 </label>
               </div>
@@ -296,13 +301,18 @@ export default function CheckoutClient ({
 
             <div className='mt-8'>
               {!paymentSetup ? (
-                <button
-                  onClick={handlePreparePayment}
-                  disabled={loading || !stripePromise}
-                  className='rounded-full bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
-                >
-                  {loading ? 'Preparing payment...' : 'Enter payment details'}
-                </button>
+              <button
+                onClick={handlePreparePayment}
+                disabled={loading || !stripePromise || !email.trim()}
+                className='rounded-full bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
+              >
+                {!email.trim() ? (
+                    <p className='mt-3 text-sm text-white/40'>
+                      Enter your email first so we can deliver your license after payment.
+                    </p>
+                  ) : null}
+                {loading ? 'Preparing secure payment...' : 'Enter payment details'}
+              </button>
               ) : stripePromise ? (
                 <Elements
                   stripe={stripePromise}
@@ -332,7 +342,7 @@ export default function CheckoutClient ({
             ) : null}
           </div>
 
-          <aside className='self-start rounded-[2rem] border border-white/10 bg-[#0b1020] p-6 md:sticky md:top-8'>
+          <aside className='self-start rounded-4xl border border-white/10 bg-[#0b1020] p-6 md:sticky md:top-8'>
             <p className='text-sm uppercase tracking-[0.3em] text-white/35'>
               Summary
             </p>
@@ -355,7 +365,7 @@ export default function CheckoutClient ({
               </div>
             </div>
 
-            <div className='mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-4'>
+            <div className='mt-8 rounded-3xl border border-white/10 bg-white/3 p-4'>
               <p className='text-xs uppercase tracking-[0.3em] text-white/35'>
                 Secure payment
               </p>
@@ -366,7 +376,7 @@ export default function CheckoutClient ({
               </ul>
             </div>
 
-            <div className='mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-4'>
+            <div className='mt-8 rounded-3xl border border-white/10 bg-white/3 p-4'>
               <p className='text-sm leading-7 text-white/50'>
                 Click &quot;Enter payment details&quot; to create a Stripe payment setup, then complete payment directly on this page.
               </p>

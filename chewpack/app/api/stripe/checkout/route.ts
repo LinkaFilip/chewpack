@@ -41,12 +41,14 @@ export async function POST (request: Request) {
 
   if (plan.stripe.mode === 'payment') {
     const body = new URLSearchParams()
-    body.set('amount', plan.stripe.amount)
+
+    body.set('amount', String(plan.stripe.amount))
     body.set('currency', 'eur')
     body.set('description', plan.stripe.description)
     body.set('automatic_payment_methods[enabled]', 'true')
     body.set('metadata[plan_id]', planId)
     body.set('metadata[plan_title]', plan.title)
+
     if (customerEmail) body.set('receipt_email', customerEmail)
     if (customerName) body.set('metadata[customer_name]', customerName)
     if (company) body.set('metadata[company]', company)
@@ -82,6 +84,15 @@ export async function POST (request: Request) {
   if (customerName) customerBody.set('name', customerName)
   if (company) customerBody.set('metadata[company]', company)
   if (country) customerBody.set('metadata[country]', country)
+    
+  const priceId = plan.stripe.priceEnv ? process.env[plan.stripe.priceEnv] : undefined
+
+  if (!priceId) {
+    return NextResponse.json(
+      { error: `Missing ${plan.stripe.priceEnv} environment variable.` },
+      { status: 500 }
+    )
+  }
 
   const customerResponse = await fetch('https://api.stripe.com/v1/customers', {
     method: 'POST',
@@ -97,14 +108,6 @@ export async function POST (request: Request) {
   if (!customerResponse.ok) {
     return NextResponse.json(
       { error: customerPayload?.error?.message ?? 'Stripe customer creation failed.' },
-      { status: 500 }
-    )
-  }
-
-  const priceId = plan.stripe.priceEnv ? process.env[plan.stripe.priceEnv] : undefined
-  if (!priceId) {
-    return NextResponse.json(
-      { error: `Missing ${plan.stripe.priceEnv} environment variable.` },
       { status: 500 }
     )
   }

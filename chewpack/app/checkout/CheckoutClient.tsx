@@ -2,7 +2,12 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
+import {
+  Elements,
+  PaymentElement,
+  useElements,
+  useStripe
+} from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { isPlanId, planOrder, plans, type PlanId } from '../plans'
 
@@ -21,6 +26,9 @@ type PaymentSetup = {
   clientSecret: string
   planId: PlanId
 }
+
+const inputClass =
+  'w-full rounded-md border border-[#ccd5de] bg-white px-3.5 py-3 text-[#101418] outline-none transition placeholder:text-[#9aa5b1] focus:border-[#101418] focus:ring-2 focus:ring-[#101418]/10'
 
 function PaymentForm ({
   customer,
@@ -70,26 +78,28 @@ function PaymentForm ({
         setError(result.error.message ?? 'Payment could not be completed.')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment could not be completed.')
+      setError(
+        err instanceof Error ? err.message : 'Payment could not be completed.'
+      )
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <form onSubmit={handlePaymentSubmit} className='mt-6 space-y-5'>
-      <div className='rounded-lg border border-white/10 bg-white p-4 text-black'>
+    <form onSubmit={handlePaymentSubmit} className='mt-5 space-y-4'>
+      <div className='rounded-lg border border-[#d8dde3] bg-white p-3 shadow-sm'>
         <PaymentElement />
       </div>
       <button
         type='submit'
         disabled={disabled || submitting || !stripe || !elements}
-        className='w-full rounded-lg bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
+        className='w-full rounded-md bg-[#101418] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#26313a] disabled:cursor-not-allowed disabled:opacity-55'
       >
         {submitting ? 'Confirming payment...' : 'Pay securely'}
       </button>
       {error ? (
-        <p className='rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
+        <p className='rounded-md border border-[#f0b4b4] bg-[#fff1f1] p-3 text-sm text-[#9d1c1c]'>
           {error}
         </p>
       ) : null}
@@ -113,12 +123,15 @@ export default function CheckoutClient ({
   const [country, setCountry] = useState('CZ')
   const [paymentSetup, setPaymentSetup] = useState<PaymentSetup | null>(null)
 
-  const customer = useMemo<CustomerDetails>(() => ({
-    email,
-    name,
-    company,
-    country
-  }), [company, country, email, name])
+  const customer = useMemo<CustomerDetails>(
+    () => ({
+      email,
+      name,
+      company,
+      country
+    }),
+    [company, country, email, name]
+  )
 
   async function createPaymentSetup () {
     const response = await fetch('/api/stripe/checkout', {
@@ -161,28 +174,58 @@ export default function CheckoutClient ({
     setError('')
   }
 
+  function clearPaymentSetup () {
+    setPaymentSetup(null)
+  }
+
   return (
-    <main className='min-h-screen bg-[#050814] px-6 py-10 text-white'>
-      <div className='mx-auto max-w-6xl'>
-        <div className='flex items-center justify-between'>
-          <Link href='/' className='text-sm text-white/55 hover:text-white'>
-            Back to the main page
+    <main className='min-h-screen bg-[#f4f6f8] px-4 py-5 text-[#101418] sm:px-6 lg:px-8'>
+      <div className='mx-auto max-w-7xl'>
+        <header className='flex flex-col gap-4 border-b border-[#d8dde3] pb-5 sm:flex-row sm:items-center sm:justify-between'>
+          <Link href='/' className='inline-flex items-center gap-3'>
+            <span className='grid h-10 w-10 place-items-center rounded-lg bg-[#101418] text-sm font-semibold text-white'>
+              CP
+            </span>
+            <span>
+              <span className='block text-sm font-semibold uppercase tracking-[0.18em] text-[#5f6b77]'>
+                Chewpack
+              </span>
+              <span className='block text-sm text-[#5f6b77]'>
+                Secure checkout
+              </span>
+            </span>
           </Link>
-        </div>
+          <Link
+            href='/'
+            className='rounded-md border border-[#c6ced7] bg-white px-4 py-2.5 text-center text-sm font-semibold text-[#101418] transition hover:border-[#101418]'
+          >
+            Back to homepage
+          </Link>
+        </header>
 
-        <section className='mt-10 grid gap-8 rounded-lg border border-white/10 bg-white/3 p-8 md:grid-cols-[1.1fr_0.9fr] md:p-12'>
-          <div>
-            <p className='text-sm uppercase tracking-[0.3em] text-white/35'>
-              {plan.highlight}
-            </p>
-            <h1 className='mt-4 text-4xl font-semibold tracking-tight md:text-6xl'>
-              {plan.title}
-            </h1>
-            <p className='mt-5 max-w-2xl text-lg leading-8 text-white/65'>
-              {plan.subtitle}
-            </p>
+        <section className='grid gap-6 py-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start'>
+          <div className='space-y-6'>
+            <div className='rounded-xl border border-[#d8dde3] bg-white p-5 shadow-sm sm:p-7'>
+              <p className='text-sm font-semibold uppercase tracking-[0.18em] text-[#18a0a6]'>
+                {plan.highlight}
+              </p>
+              <div className='mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
+                <div>
+                  <h1 className='text-4xl font-semibold tracking-normal sm:text-5xl'>
+                    Choose your Chewpack license
+                  </h1>
+                  <p className='mt-4 max-w-2xl text-base leading-7 text-[#5f6b77] sm:text-lg'>
+                    {plan.subtitle}
+                  </p>
+                </div>
+                <div className='rounded-lg border border-[#dce2e8] bg-[#f7f9fb] px-4 py-3'>
+                  <p className='text-sm text-[#6a7580]'>Selected plan</p>
+                  <p className='text-2xl font-semibold'>{plan.price}</p>
+                </div>
+              </div>
+            </div>
 
-            <div className='mt-8 grid gap-3 md:grid-cols-3'>
+            <div className='grid gap-3 md:grid-cols-3'>
               {planOrder.map(id => {
                 const option = plans[id]
                 const active = id === selectedPlanId
@@ -193,126 +236,147 @@ export default function CheckoutClient ({
                     onClick={() => selectPlan(id)}
                     className={`rounded-lg border p-5 text-left transition ${
                       active
-                        ? 'border-white/30 bg-white text-black'
-                        : 'border-white/10 bg-black/20 text-white hover:border-white/20 hover:bg-white/5'
+                        ? 'border-[#101418] bg-[#101418] text-white shadow-[0_18px_45px_rgba(16,20,24,0.18)]'
+                        : 'border-[#d8dde3] bg-white text-[#101418] hover:border-[#101418]'
                     }`}
                   >
-                    <p
-                      className={`text-xs uppercase tracking-[0.28em] ${
-                        active ? 'text-black/55' : 'text-white/35'
+                    <span
+                      className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+                        active ? 'text-[#7de1e4]' : 'text-[#18a0a6]'
                       }`}
                     >
                       {option.highlight}
-                    </p>
-                    <p className='mt-3 text-lg font-semibold'>{option.title}</p>
-                    <p
-                      className={`mt-2 text-sm ${
-                        active ? 'text-black/65' : 'text-white/55'
+                    </span>
+                    <span className='mt-3 block text-lg font-semibold'>
+                      {option.title}
+                    </span>
+                    <span
+                      className={`mt-2 block text-sm ${
+                        active ? 'text-white/72' : 'text-[#5f6b77]'
                       }`}
                     >
-                      {option.price}
-                    </p>
-                    {active ? (
-                      <span className='mt-4 inline-flex rounded-lg bg-black/10 px-3 py-1 text-xs font-semibold text-black/70'>
-                        Selected
-                      </span>
-                    ) : null}
+                      {option.price} · {option.billing}
+                    </span>
+                    <span
+                      className={`mt-4 block border-t pt-4 text-sm ${
+                        active
+                          ? 'border-white/15 text-white/72'
+                          : 'border-[#e1e5ea] text-[#5f6b77]'
+                      }`}
+                    >
+                      {option.cadence}
+                    </span>
                   </button>
                 )
               })}
             </div>
 
-            <div className='mt-8 grid gap-4 sm:grid-cols-2'>
-              <div className='rounded-lg border border-white/10 bg-white/4 p-5 text-white/70'>
-                <p className='text-sm opacity-70'>Billing</p>
-                <p className='mt-2 text-lg font-semibold'>{plan.billing}</p>
+            <section className='rounded-xl border border-[#d8dde3] bg-white p-5 shadow-sm sm:p-7'>
+              <div className='flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between'>
+                <div>
+                  <p className='text-sm font-semibold uppercase tracking-[0.18em] text-[#18a0a6]'>
+                    Customer details
+                  </p>
+                  <h2 className='mt-2 text-2xl font-semibold'>
+                    License delivery
+                  </h2>
+                </div>
+                <p className='text-sm text-[#6a7580]'>
+                  Payment fields are handled by Stripe.
+                </p>
               </div>
-              <div className='rounded-lg border border-white/10 bg-white/4 p-5 text-white/70'>
-                <p className='text-sm opacity-70'>Access cadence</p>
-                <p className='mt-2 text-lg font-semibold'>{plan.cadence}</p>
-              </div>
-            </div>
 
-            <div className='mt-8 rounded-lg border border-white/10 bg-black/20 p-6'>
-              <p className='text-sm uppercase tracking-[0.28em] text-white/35'>
-                Customer details
-              </p>
               <div className='mt-5 grid gap-4 sm:grid-cols-2'>
-                <label className='grid gap-2 text-sm text-white/65'>
-                  Email <span className='text-white/35'>required</span>
+                <label className='grid gap-2 text-sm font-medium text-[#3a444e]'>
+                  Email <span className='font-normal text-[#7b8794]'>required</span>
                   <input
                     type='email'
                     value={email}
                     onChange={event => {
                       setEmail(event.target.value)
-                      setPaymentSetup(null)
+                      clearPaymentSetup()
                     }}
                     placeholder='name@example.com'
-                    className='rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                    className={inputClass}
                   />
                 </label>
-                <label className='grid gap-2 text-sm text-white/65'>
+                <label className='grid gap-2 text-sm font-medium text-[#3a444e]'>
                   Full name
                   <input
                     type='text'
                     value={name}
                     onChange={event => {
                       setName(event.target.value)
-                      setPaymentSetup(null)
+                      clearPaymentSetup()
                     }}
                     placeholder='Jane Doe'
-                    className='rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                    className={inputClass}
                   />
                 </label>
-                <label className='grid gap-2 text-sm text-white/65'>
+                <label className='grid gap-2 text-sm font-medium text-[#3a444e]'>
                   Company
                   <input
                     type='text'
                     value={company}
                     onChange={event => {
                       setCompany(event.target.value)
-                      setPaymentSetup(null)
+                      clearPaymentSetup()
                     }}
                     placeholder='Optional'
-                    className='rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                    className={inputClass}
                   />
                 </label>
-                <label className='grid gap-2 text-sm text-white/65'>
+                <label className='grid gap-2 text-sm font-medium text-[#3a444e]'>
                   Country
                   <select
                     value={country}
                     onChange={event => {
                       setCountry(event.target.value)
-                      setPaymentSetup(null)
+                      clearPaymentSetup()
                     }}
-                    className='rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30'
+                    className={inputClass}
                   >
-                    <option value='CZ' className='bg-[#0b1020] text-white'>Czechia</option>
-                    <option value='SK' className='bg-[#0b1020] text-white'>Slovakia</option>
-                    <option value='DE' className='bg-[#0b1020] text-white'>Germany</option>
-                    <option value='AT' className='bg-[#0b1020] text-white'>Austria</option>
+                    <option value='CZ'>Czechia</option>
+                    <option value='SK'>Slovakia</option>
+                    <option value='DE'>Germany</option>
+                    <option value='AT'>Austria</option>
                   </select>
                 </label>
               </div>
-              <p className='mt-4 text-sm leading-7 text-white/45'>
-                Payment details stay inside Stripe Elements. This app receives only the selected plan and customer details.
-              </p>
-            </div>
+            </section>
 
-            <div className='mt-8'>
+            <section className='rounded-xl border border-[#d8dde3] bg-white p-5 shadow-sm sm:p-7'>
+              <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+                <div>
+                  <p className='text-sm font-semibold uppercase tracking-[0.18em] text-[#18a0a6]'>
+                    Payment
+                  </p>
+                  <h2 className='mt-2 text-2xl font-semibold'>
+                    Secure card details
+                  </h2>
+                </div>
+                <span className='rounded-md bg-[#e8f7f7] px-3 py-1.5 text-sm font-semibold text-[#126a70]'>
+                  Stripe Elements
+                </span>
+              </div>
+
               {!paymentSetup ? (
-              <button
-                onClick={handlePreparePayment}
-                disabled={loading || !stripePromise || !email.trim()}
-                className='rounded-lg bg-white px-7 py-4 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60'
-              >
-                {!email.trim() ? (
-                    <p className='mt-3 text-sm text-white/40'>
-                      Enter your email first so we can deliver your license after payment.
+                <div className='mt-5'>
+                  <button
+                    type='button'
+                    onClick={handlePreparePayment}
+                    disabled={loading || !stripePromise || !email.trim()}
+                    className='w-full rounded-md bg-[#101418] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#26313a] disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto'
+                  >
+                    {loading ? 'Preparing secure payment...' : 'Enter payment details'}
+                  </button>
+                  {!email.trim() ? (
+                    <p className='mt-3 text-sm leading-6 text-[#6a7580]'>
+                      Enter your email first so the license can be delivered
+                      after payment.
                     </p>
                   ) : null}
-                {loading ? 'Preparing secure payment...' : 'Enter payment details'}
-              </button>
+                </div>
               ) : stripePromise ? (
                 <Elements
                   stripe={stripePromise}
@@ -321,7 +385,11 @@ export default function CheckoutClient ({
                     appearance: {
                       theme: 'stripe',
                       variables: {
-                        borderRadius: '14px'
+                        borderRadius: '8px',
+                        colorPrimary: '#101418',
+                        colorText: '#101418',
+                        colorTextSecondary: '#5f6b77',
+                        colorBackground: '#ffffff'
                       }
                     }
                   }}
@@ -329,39 +397,53 @@ export default function CheckoutClient ({
                   <PaymentForm customer={customer} disabled={loading} />
                 </Elements>
               ) : null}
-            </div>
-            {error ? (
-              <p className='mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
-                {error}
-              </p>
-            ) : null}
-            {!stripePromise ? (
-              <p className='mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200'>
-                Missing NEXT_PUBLIC_STRIPE_PUBLIC_KEY environment variable.
-              </p>
-            ) : null}
+
+              {error ? (
+                <p className='mt-5 rounded-md border border-[#f0b4b4] bg-[#fff1f1] p-3 text-sm text-[#9d1c1c]'>
+                  {error}
+                </p>
+              ) : null}
+              {!stripePromise ? (
+                <p className='mt-5 rounded-md border border-[#f0b4b4] bg-[#fff1f1] p-3 text-sm text-[#9d1c1c]'>
+                  Missing NEXT_PUBLIC_STRIPE_PUBLIC_KEY environment variable.
+                </p>
+              ) : null}
+            </section>
           </div>
 
-          <aside className='self-start rounded-4xl border border-white/10 bg-[#0b1020] p-6 md:sticky md:top-8'>
-            <p className='text-sm uppercase tracking-[0.3em] text-white/35'>
-              Summary
+          <aside className='rounded-xl border border-[#d8dde3] bg-white p-5 shadow-sm lg:sticky lg:top-6'>
+            <p className='text-sm font-semibold uppercase tracking-[0.18em] text-[#18a0a6]'>
+              Order summary
             </p>
-            <div className='mt-6 space-y-4 text-white/75'>
-              <div className='flex items-center justify-between'>
-                <span>{plan.title}</span>
-                <span>{plan.price}</span>
+            <div className='mt-5 space-y-4'>
+              <div className='flex items-start justify-between gap-4'>
+                <div>
+                  <p className='font-semibold'>{plan.title}</p>
+                  <p className='mt-1 text-sm text-[#6a7580]'>{plan.billing}</p>
+                </div>
+                <p className='font-semibold'>{plan.price}</p>
               </div>
-              <div className='flex items-center justify-between'>
-                <span>Access type</span>
-                <span>{plan.highlight}</span>
+              <div className='rounded-lg border border-[#dce2e8] bg-[#f7f9fb] p-4'>
+                <p className='text-sm font-medium text-[#3a444e]'>
+                  Included with this license
+                </p>
+                <ul className='mt-3 space-y-2 text-sm text-[#5f6b77]'>
+                  {plan.features.map(feature => (
+                    <li key={feature} className='flex gap-2'>
+                      <span className='mt-2 h-1.5 w-1.5 rounded-full bg-[#18a0a6]' />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className='flex items-center justify-between'>
-                <span>Billing</span>
-                <span>{plan.billing}</span>
-              </div>
-              <div className='flex items-center justify-between border-t border-white/10 pt-4 text-white'>
-                <span className='font-semibold'>Total today</span>
-                <span className='text-xl font-semibold'>{plan.price}</span>
+              <div className='border-t border-[#e1e5ea] pt-4'>
+                <div className='flex items-center justify-between'>
+                  <span className='font-semibold'>Total today</span>
+                  <span className='text-2xl font-semibold'>{plan.price}</span>
+                </div>
+                <p className='mt-2 text-sm leading-6 text-[#6a7580]'>
+                  Fulfillment happens after the Stripe webhook confirms payment.
+                </p>
               </div>
             </div>
           </aside>

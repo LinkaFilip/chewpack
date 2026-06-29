@@ -1,9 +1,10 @@
-// src/SeoSchema.tsx
+import { getSiteUrl } from './site'
 
-const siteUrl = 'https://gumpack.app' // replace with your real domain
 const productName = 'Gum Pack'
 const price: 20 | null = null // example: "19.00"
 const priceCurrency = 'EUR'
+
+const siteUrl = getSiteUrl()
 
 const softwareApplication = {
   '@type': 'SoftwareApplication',

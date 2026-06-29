@@ -7,7 +7,7 @@ type SendLicenseEmailInput = {
 }
 
 function getBaseUrl () {
-  return process.env.LICENSE_REDEEM_BASE_URL?.replace(/\/$/, '') ?? 'https://chewpack.com'
+  return process.env.LICENSE_REDEEM_BASE_URL?.replace(/\/$/, '') ?? 'https://chewpack.app'
 }
 
 export async function sendLicenseEmail ({ to, code, planId }: SendLicenseEmailInput) {

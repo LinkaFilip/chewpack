@@ -62,7 +62,7 @@ export default function Home () {
           </header>
 
           <div className='grid flex-1 items-center gap-10 py-10'>
-            <div className='max-w-96'>
+            <div className='w-full'>
               <p className='inline-flex rounded-md border border-[#cfd6de] bg-white px-3 py-1.5 text-sm font-medium text-[#42606b]'>
                 Typeface design, without generic vector friction
               </p>

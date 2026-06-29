@@ -281,9 +281,6 @@ export default function CheckoutClient ({
                     License delivery
                   </h2>
                 </div>
-                <p className='text-sm text-[#6a7580]'>
-                  Payment fields are handled by Stripe.
-                </p>
               </div>
 
               <div className='mt-5 grid gap-4 sm:grid-cols-2'>
@@ -301,7 +298,7 @@ export default function CheckoutClient ({
                   />
                 </label>
                 <label className='grid gap-2 text-sm font-medium text-[#3a444e]'>
-                  Full name
+                  Full name <span className='font-normal text-[#7b8794]'>required</span>
                   <input
                     type='text'
                     value={name}
@@ -355,9 +352,6 @@ export default function CheckoutClient ({
                     Secure card details
                   </h2>
                 </div>
-                <span className='rounded-md bg-[#e8f7f7] px-3 py-1.5 text-sm font-semibold text-[#126a70]'>
-                  Stripe Elements
-                </span>
               </div>
 
               {!paymentSetup ? (
@@ -441,9 +435,6 @@ export default function CheckoutClient ({
                   <span className='font-semibold'>Total today</span>
                   <span className='text-2xl font-semibold'>{plan.price}</span>
                 </div>
-                <p className='mt-2 text-sm leading-6 text-[#6a7580]'>
-                  Fulfillment happens after the Stripe webhook confirms payment.
-                </p>
               </div>
             </div>
           </aside>

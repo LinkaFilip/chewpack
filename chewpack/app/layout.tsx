@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 
 const geistSans = Geist({
@@ -27,6 +28,22 @@ export default function RootLayout({
       lang='en'
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <Script
+          async
+          src='https://www.googletagmanager.com/gtag/js?id=G-V5ZQLEJN0Z'
+          strategy='afterInteractive'
+        />
+        <Script id='google-analytics' strategy='afterInteractive'>
+          {`
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-V5ZQLEJN0Z');
+`}
+        </Script>
+      </head>
       <body className='min-h-full flex flex-col'>{children}</body>
     </html>
   )

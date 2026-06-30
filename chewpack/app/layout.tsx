@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Chewpack',
+  title: 'ChewPack',
   description: 'Chewpack is font editing software with a Stripe checkout flow.'
 }
 

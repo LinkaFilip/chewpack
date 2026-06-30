@@ -1,4 +1,4 @@
-export const defaultSiteUrl = 'https://gumpack.app'
+export const defaultSiteUrl = 'https://chewpack.app'
 
 export function getSiteUrl () {
   const siteUrl =

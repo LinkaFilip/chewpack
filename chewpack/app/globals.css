@@ -17,10 +17,9 @@ select {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* In the base layer so utilities (e.g. on inputs) can override it. */
-@layer base {
-  :focus-visible {
-    outline: 2px solid #101418;
-    outline-offset: 2px;
-  }
+/* Links and buttons only; inputs show focus with their own border.
+   Unlayered CSS beats Tailwind utilities, so keep this selector narrow. */
+:where(a, button):focus-visible {
+  outline: 2px solid #101418;
+  outline-offset: 2px;
 }

@@ -34,7 +34,7 @@ export function DocsSearch ({ items }: { items: SearchItem[] }) {
         onChange={event => setQuery(event.target.value)}
         placeholder='Search features and shortcuts'
         autoComplete='off'
-        className='w-full rounded-md border border-[#cfd6dd] bg-white px-4 py-3 text-base text-[#101418] placeholder:text-[#8793a0] focus-visible:border-[#101418]'
+        className='w-full rounded-md border border-[#cfd6dd] bg-white px-4 py-3 text-base text-[#101418] placeholder:text-[#8793a0] focus:border-[#101418] focus:outline-none'
       />
       {terms.length > 0 && (
         <div className='mt-2 rounded-lg border border-[#dce2e8] bg-white' aria-live='polite'>

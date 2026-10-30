@@ -12,6 +12,8 @@ const contextLabels: Record<PublicShortcut['context'], string | null> = {
 
 function matches (shortcut: PublicShortcut, terms: string[]) {
   const haystack = [
+    shortcut.group,
+    contextLabels[shortcut.context] ?? '',
     shortcut.action,
     shortcut.keys.join(' '),
     shortcut.keys.join('+'),
@@ -49,9 +51,9 @@ export function ShortcutsBrowser ({ groups }: { groups: { group: string, items: 
             type='search'
             value={query}
             onChange={event => setQuery(event.target.value)}
-            placeholder='Filter by action, key or menu'
+            placeholder='Filter by action, key, menu or group'
             autoComplete='off'
-            className='w-full max-w-md rounded-md border border-[#cfd6dd] bg-white px-4 py-3 text-base text-[#101418] placeholder:text-[#8793a0] focus-visible:border-[#101418]'
+            className='w-full max-w-md rounded-md border border-[#cfd6dd] bg-white px-4 py-3 text-base text-[#101418] placeholder:text-[#8793a0] focus:border-[#101418] focus:outline-none'
           />
         </div>
         <div role='group' aria-label='Show group' className='flex flex-wrap gap-2'>

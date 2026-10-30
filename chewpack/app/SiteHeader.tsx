@@ -14,16 +14,15 @@ export function SiteHeader ({ showDownload = false }: { showDownload?: boolean }
           className='rounded-lg'
         />
         <span>
-          <span className='block text-sm font-semibold uppercase tracking-[0.18em] text-[#5f6b77]'>
+          <span className='block text-sm font-semibold uppercasetext-[#5f6b77]'>
             Chewpack
           </span>
-          <span className='block text-sm text-[#5f6b77]'>Font editing software</span>
         </span>
       </Link>
       <nav className='flex flex-wrap items-center gap-2 text-sm'>
         <Link
           href='/docs'
-          className='rounded-md px-3 py-2 font-medium text-[#5f6b77] transition hover:bg-white hover:text-[#101418]'
+          className='rounded-md px-3 py-2 font-medium text-[#5f6b77] transition hover:bg-[#101418] hover:text-white'
         >
           Docs
         </Link>

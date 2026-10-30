@@ -4,8 +4,8 @@ import { downloadUrl } from './site'
 
 export function SiteHeader ({ showDownload = false }: { showDownload?: boolean }) {
   return (
-    <header className='flex flex-col gap-4 pb-5 sm:flex-row sm:items-center sm:justify-between'>
-      <Link href='/' className='group inline-flex items-center gap-3'>
+    <header className='flex items-center justify-between gap-3 pb-5'>
+      <Link href='/' className='group inline-flex min-w-0 items-center gap-3'>
         <Image
           src='/favicon.ico'
           alt='Chewpack'
@@ -19,10 +19,10 @@ export function SiteHeader ({ showDownload = false }: { showDownload?: boolean }
           </span>
         </span>
       </Link>
-      <nav className='flex flex-wrap items-center gap-2 text-sm'>
+      <nav className='flex shrink-0 items-center gap-1 text-sm sm:gap-2'>
         <Link
           href='/docs'
-          className='rounded-md px-3 py-2 font-medium text-[#5f6b77] transition hover:bg-[#101418] hover:text-white'
+          className='rounded-md px-2.5 py-2 font-medium sm:px-3 text-[#5f6b77] transition hover:bg-[#101418] hover:text-white'
         >
           Docs
         </Link>
@@ -30,7 +30,7 @@ export function SiteHeader ({ showDownload = false }: { showDownload?: boolean }
           <a
             href={downloadUrl}
             download
-            className='rounded-md bg-[#101418] px-4 py-2.5 font-semibold text-white transition hover:bg-[#26313a]'
+            className='rounded-md bg-[#101418] px-3 py-2.5 font-semibold sm:px-4 text-white transition hover:bg-[#26313a]'
           >
             Download
           </a>

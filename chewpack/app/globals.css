@@ -16,3 +16,8 @@ input,
 select {
   -webkit-tap-highlight-color: transparent;
 }
+
+:focus-visible {
+  outline: 2px solid #101418;
+  outline-offset: 2px;
+}

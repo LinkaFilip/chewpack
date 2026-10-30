@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { SeoSchema } from './SeoSchema'
-import Image from 'next/image'
+import { SiteHeader } from './SiteHeader'
+import { downloadUrl } from './site'
 
 /*
 const features = [
@@ -23,46 +23,13 @@ const features = [
 ]
 */
 
-const downloadUrl = '/downloads/ChewPackSetup-1.1.2.exe'
-
 export default function Home () {
   return (
     <>
       <SeoSchema />
       <main className='min-h-screen bg-[#f4f6f8] text-[#101418]'>
         <section className='mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8'>
-          <header className='flex flex-col gap-4 pb-5 sm:flex-row sm:items-center sm:justify-between'>
-            <Link href='/' className='group inline-flex items-center gap-3'>
-              <Image
-                src='/favicon.ico'
-                alt='Chewpack'
-                width={40}
-                height={40}
-                className='rounded-lg'
-              />
-              <span>
-                <span className='block text-sm font-semibold uppercase tracking-[0.18em] text-[#5f6b77]'>
-                  Chewpack
-                </span>
-                <span className='block text-sm text-[#5f6b77]'>Font editing software</span>
-              </span>
-            </Link>
-            <nav className='flex flex-wrap items-center gap-2 text-sm'>
-              {/* <a
-                href='#features'
-                className='rounded-md px-3 py-2 font-medium text-[#5f6b77] transition hover:bg-white hover:text-[#101418]'
-              >
-                Features
-              </a> */}
-              {/* <a
-                href={downloadUrl}
-                download
-                className='rounded-md bg-[#101418] px-4 py-2.5 font-semibold text-white transition hover:bg-[#26313a]'
-              >
-                Download
-              </a> */}
-            </nav>
-          </header>
+          <SiteHeader />
 
           <div className='grid flex-1 items-center gap-10 py-10'>
             <div className='w-full'>

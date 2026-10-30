@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { SeoSchema } from './SeoSchema'
 import Image from 'next/image'
 
+/*
 const features = [
   {
     title: 'Outline drawing',
@@ -20,8 +21,9 @@ const features = [
     text: 'Create polished demos that show the design process without screen-recording clutter.'
   }
 ]
+*/
 
-const workflow = ['Draw', 'Space', 'Preview', 'Export']
+const downloadUrl = '/downloads/ChewPackSetup-1.1.2.exe'
 
 export default function Home () {
   return (
@@ -46,27 +48,25 @@ export default function Home () {
               </span>
             </Link>
             <nav className='flex flex-wrap items-center gap-2 text-sm'>
-              <a
+              {/* <a
                 href='#features'
                 className='rounded-md px-3 py-2 font-medium text-[#5f6b77] transition hover:bg-white hover:text-[#101418]'
               >
                 Features
-              </a>
-              <Link
-                href='/checkout?plan=1y'
+              </a> */}
+              {/* <a
+                href={downloadUrl}
+                download
                 className='rounded-md bg-[#101418] px-4 py-2.5 font-semibold text-white transition hover:bg-[#26313a]'
               >
-                Buy license
-              </Link>
+                Download
+              </a> */}
             </nav>
           </header>
 
           <div className='grid flex-1 items-center gap-10 py-10'>
             <div className='w-full'>
-              <p className='inline-flex rounded-md border border-[#cfd6de] bg-white px-3 py-1.5 text-sm font-medium text-[#42606b]'>
-                Typeface design, without generic vector friction
-              </p>
-              <h1 className='mt-6 text-5xl font-semibold leading-[0.98] tracking-normal text-[#101418] sm:text-6xl lg:text-7xl'>
+              <h1 className='text-5xl font-semibold leading-[0.98] tracking-normal text-[#101418] sm:text-6xl lg:text-7xl'>
                 Make your own font. <br></br>Keep it precise.
               </h1>
               <p className='mt-6 max-w-xl text-lg leading-8 text-[#53616e]'>
@@ -75,24 +75,28 @@ export default function Home () {
                 a typeface that feels intentional.
               </p>
               <div className='mt-8 flex flex-col gap-3 sm:flex-row'>
-                <Link
-                  href='/checkout?plan=1y'
-                  className='rounded-md bg-[#101418] px-6 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-[#26313a]'
-                >
-                  Continue to checkout
-                </Link>
                 <a
-                  href='#features'
-                  className='rounded-md border border-[#c6ced7] bg-white px-6 py-3.5 text-center text-sm font-semibold text-[#101418] transition hover:border-[#101418]'
+                  href={downloadUrl}
+                  download
+                  className='inline-flex items-center justify-center gap-2 rounded-md bg-[#101418] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#26313a]'
                 >
-                  View workflow
+                  <svg
+                    viewBox='0 0 16 16'
+                    width='16'
+                    height='16'
+                    fill='currentColor'
+                    aria-hidden='true'
+                  >
+                    <path d='M0 0h7.5v7.5H0zM8.5 0H16v7.5H8.5zM0 8.5h7.5V16H0zM8.5 8.5H16V16H8.5z' />
+                  </svg>
+                  Download for Windows
                 </a>
               </div>
             </div>
           </div>
         </section>
 
-        <section
+        {/* <section
           id='features'
           className='border-y border-[#d8dde3] bg-white px-4 py-14 sm:px-6 lg:px-8'
         >
@@ -107,7 +111,7 @@ export default function Home () {
               </article>
             ))}
           </div>
-        </section>
+        </section> */}
       </main>
     </>
   )

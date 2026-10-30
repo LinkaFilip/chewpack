@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'ChewPack',
-  description: 'Chewpack is font editing software with a Stripe checkout flow.'
+  description: 'Chewpack is font editing software for Windows. Download it for free.'
 }
 
 export default function RootLayout({

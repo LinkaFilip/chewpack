@@ -1,6 +1,6 @@
 export const defaultSiteUrl = 'https://chewpack.app'
 
-export const downloadUrl = '/downloads/ChewPackSetup-1.1.2.exe'
+export const downloadUrl = '/downloads/ChewPackSetup-1.1.3.exe'
 
 export function getSiteUrl () {
   const siteUrl =

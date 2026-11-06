@@ -37,14 +37,14 @@ export function DocsSearch ({ items }: { items: SearchItem[] }) {
         className='w-full rounded-md border border-[#cfd6dd] bg-white px-4 py-3 text-base text-[#101418] placeholder:text-[#8793a0] focus:border-[#101418] focus:outline-none'
       />
       {terms.length > 0 && (
-        <div className='mt-2 rounded-lg border border-[#dce2e8] bg-white' aria-live='polite'>
+        <div className='mt-2 overflow-hidden rounded-lg border border-[#dce2e8] bg-white' aria-live='polite'>
           {results.length === 0
             ? <p className='px-4 py-3 text-sm text-[#5f6b77]'>Nothing matches “{query.trim()}”.</p>
             : (
               <ul className='divide-y divide-[#eef1f4]'>
                 {results.slice(0, maxResults).map(item => (
                   <li key={item.href}>
-                    <Link href={item.href} className='block px-4 py-3'>
+                    <Link href={item.href} className='block px-4 py-3 transition hover:bg-[#e6ecf2] hover:shadow-[inset_3px_0_0_#101418] focus-visible:bg-[#e6ecf2]'>
                       <span className='flex flex-wrap items-center gap-2 font-semibold text-[#101418]'>
                         {item.title}
                         {item.keys && <Keys keys={item.keys} className='text-sm' />}

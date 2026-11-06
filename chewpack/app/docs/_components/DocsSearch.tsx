@@ -44,7 +44,7 @@ export function DocsSearch ({ items }: { items: SearchItem[] }) {
               <ul className='divide-y divide-[#eef1f4]'>
                 {results.slice(0, maxResults).map(item => (
                   <li key={item.href}>
-                    <Link href={item.href} className='block px-4 py-3 transition hover:bg-[#fbfcfd]'>
+                    <Link href={item.href} className='block px-4 py-3'>
                       <span className='flex flex-wrap items-center gap-2 font-semibold text-[#101418]'>
                         {item.title}
                         {item.keys && <Keys keys={item.keys} className='text-sm' />}

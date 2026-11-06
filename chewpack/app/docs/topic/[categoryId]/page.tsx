@@ -68,7 +68,7 @@ export default async function CategoryPage ({ params }: PageProps<'/docs/topic/[
       <ul className='mt-10 divide-y divide-[#eef1f4] rounded-lg border border-[#dce2e8] bg-white'>
         {categoryFeatures.map(feature => (
           <li key={feature.id}>
-            <Link href={`/docs/${feature.id}`} className='block px-5 py-4 transition hover:bg-[#fbfcfd]'>
+            <Link href={`/docs/${feature.id}`} className='block px-5 py-4'>
               <span className='flex flex-wrap items-center gap-2 font-semibold text-[#101418]'>
                 {feature.title}
                 {feature.status === 'beta' && (
